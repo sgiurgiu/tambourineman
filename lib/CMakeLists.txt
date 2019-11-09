@@ -7,17 +7,16 @@ project (tbm
 find_package(Protobuf REQUIRED)
 find_package (Threads REQUIRED)
 
-
 file(GLOB_RECURSE LIB_HEADERS *.h *.hpp )
 
 set(LIB_NAME tbm)
+set (TBM_SRCS src/protofileloader.cpp
+        src/protofile.cpp)
 
-set (TBM_SRCS src/protofileloader.cpp)
+include_directories("${CMAKE_SOURCE_DIR}/lib/include" ${Protobuf_INCLUDE_DIRS}
+    ${EASYLOGGING_INCLUDE})
 
-include_directories("${CMAKE_SOURCE_DIR}/lib/include" ${Protobuf_INCLUDE_DIRS})
-
-
-add_library(${LIB_NAME} SHARED ${TBM_SRCS})
+add_library(${LIB_NAME} SHARED ${TBM_SRCS} ${EASYLOGGING_SRCS})
 add_library(TBM::${LIB_NAME} ALIAS ${LIB_NAME})
 
 target_compile_definitions(${LIB_NAME} PUBLIC "LIBTBM_DEBUG=$<CONFIG:Debug>")
@@ -35,8 +34,9 @@ add_custom_target(LibHeaders SOURCES ${LIB_HEADERS})
 target_link_libraries(${LIB_NAME} PUBLIC ${Protobuf_LIBRARIES})
 target_link_libraries(${LIB_NAME} PRIVATE Threads::Threads)
 
-## this was copied and mangled
+## this was copied and mangled until it became a spagetti mess
 ## from https://github.com/forexample/package-example/blob/master/Foo/CMakeLists.txt
+## TODO: revisit this at some point in the next decade
 
 include(GNUInstallDirs)
 

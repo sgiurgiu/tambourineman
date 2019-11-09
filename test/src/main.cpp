@@ -1,10 +1,13 @@
 #include <gtest/gtest.h>
 #include <protofileloader.h>
 
+using namespace tbm;
+
 TEST(ProtoFileLoader, loadFile)
 {
     ProtoFileLoader loader;
-    loader.loadFile("test/data/","test/data/addressbook.proto");
+    std::vector<std::string> paths = {"test/data/"};
+    loader.loadFile("test/data/addressbook.proto", paths);
 
     //ASSERT_TRUE(loader);
     //ASSERT_TRUE(loader.HasMember("source"));

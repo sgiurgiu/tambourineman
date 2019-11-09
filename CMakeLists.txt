@@ -32,6 +32,11 @@ endif()
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
 
+set(EASYLOGGING_DIR ${CMAKE_SOURCE_DIR}/external/easyloggingpp/)
+set(EASYLOGGING_INCLUDE ${EASYLOGGING_DIR}/src)
+set(EASYLOGGING_SRCS ${EASYLOGGING_DIR}/src/easylogging++.cc)
+
+
 add_subdirectory(lib)
 add_subdirectory(qt)
 
