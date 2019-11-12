@@ -4,22 +4,12 @@
 #include <string>
 #include <google/protobuf/compiler/importer.h>
 #include <vector>
+#include <sstream>
 
 INITIALIZE_EASYLOGGINGPP
 
 namespace tbm {
 
-struct ProtoFileLoaderError {
-    ProtoFileLoaderError(){}
-    ProtoFileLoaderError(const std::string& filename, int line, int column,
-                         const std::string& message):
-        filename(filename),line(line),column(column),message(message)
-    {}
-    std::string filename;
-    int line = -1;
-    int column = -1;
-    std::string message;
-};
 
 class ProtoFileLoaderErrorCollector : public google::protobuf::compiler::MultiFileErrorCollector
 {
@@ -38,7 +28,7 @@ ProtoFileLoader::ProtoFileLoader()
 {
 }
 
-void ProtoFileLoader::loadFile(const std::string& file,std::vector<std::string>& includePaths)
+ProtoFile ProtoFileLoader::loadFile(const std::string& file,std::vector<std::string>& includePaths)
 {
     LOG(INFO) << "Loading file "<<file<<std::endl;
 
@@ -66,7 +56,12 @@ void ProtoFileLoader::loadFile(const std::string& file,std::vector<std::string>&
     auto descriptor = importer.Import(file);
     if(descriptor)
     {
-
+        ProtoFile file(descriptor);
+        return file;
+    }
+    else
+    {
+        throw ProtoFileLoaderException(errorCollector.errors,errorCollector.warnings);
     }
     /*for(int i=0;i<descriptor->message_type_count();i++)
     {
@@ -105,5 +100,51 @@ void ProtoFileLoaderErrorCollector::AddError(const std::string& filename, int li
     LOG(ERROR)  << "Error: "<< filename<< " at line "<<line<<
                  " and col "<<column<<". Message: "<<message <<std::endl;
 }
+
+ProtoFileLoaderException::ProtoFileLoaderException(const std::vector<ProtoFileLoaderError>& errors,
+                                                   const std::vector<ProtoFileLoaderError>& warnings):
+    errors(errors),warnings(warnings)
+{
+}
+
+const char* ProtoFileLoaderException::what() const noexcept
+{
+    std::stringstream ss;
+    if(!errors.empty())
+    {
+        ss<<"ERRORS:\n";
+        for(const auto& err:errors)
+        {
+            ss << err.filename<< " at line "<<err.line<<
+                         " and col "<<err.column<<". Message: "<<err.message <<"\n";
+        }
+    }
+
+    if(!warnings.empty())
+    {
+        ss<<"WARNINGS:\n";
+        for(const auto& err:warnings)
+        {
+            ss << err.filename<< " at line "<<err.line<<
+                         " and col "<<err.column<<". Message: "<<err.message <<"\n";
+        }
+    }
+
+    if(errors.empty() &&  warnings.empty())
+    {
+        ss << "No errors, nor warnings\n";
+    }
+
+    return ss.str().c_str();
+}
+std::vector<ProtoFileLoaderError> ProtoFileLoaderException::getErrors() const
+{
+    return errors;
+}
+std::vector<ProtoFileLoaderError> ProtoFileLoaderException::getWarnings() const
+{
+    return warnings;
+}
+
 
 }//namespace tbm
