@@ -23,9 +23,12 @@ public:
     std::string fullName() const;
     std::vector<std::string> values();
 private:
-    ProtoEnum(const google::protobuf::EnumDescriptor* enumDescriptor);
+    ProtoEnum(const google::protobuf::EnumDescriptor* enumDescriptor);   
 private:
     const google::protobuf::EnumDescriptor* enumDescriptor;
+    std::string _name;
+    std::string _fullName;    
+    std::vector<std::string> _values;
     friend class ProtoMessage;
 };
 
@@ -36,20 +39,69 @@ public:
     std::string fullName() const;
     std::string jsonName() const;
     int number() const;
-    bool isRequired() const;
-    bool isOptional() const;
-    bool isRepeated() const;
+
+    enum Label {
+        LABEL_OPTIONAL      = 1,    // optional
+        LABEL_REQUIRED      = 2,    // required
+        LABEL_REPEATED      = 3,    // repeated
+
+        MAX_LABEL           = 3,    // Constant useful for defining lookup tables
+        // indexed by Label.
+    };
+    Label label() const;   
     bool isPackable() const;
     bool isPacked() const;
     bool isMap() const;
 
-    int type() const;
+    //copied from the original. Will have to be maintained should the original add/remove any
+    enum Type {
+        TYPE_DOUBLE         = 1,   // double, exactly eight bytes on the wire.
+        TYPE_FLOAT          = 2,   // float, exactly four bytes on the wire.
+        TYPE_INT64          = 3,   // int64, varint on the wire.  Negative numbers
+                                    // take 10 bytes.  Use TYPE_SINT64 if negative
+                                    // values are likely.
+        TYPE_UINT64         = 4,   // uint64, varint on the wire.
+        TYPE_INT32          = 5,   // int32, varint on the wire.  Negative numbers
+                                    // take 10 bytes.  Use TYPE_SINT32 if negative
+                                    // values are likely.
+        TYPE_FIXED64        = 6,   // uint64, exactly eight bytes on the wire.
+        TYPE_FIXED32        = 7,   // uint32, exactly four bytes on the wire.
+        TYPE_BOOL           = 8,   // bool, varint on the wire.
+        TYPE_STRING         = 9,   // UTF-8 text.
+        TYPE_GROUP          = 10,  // Tag-delimited message.  Deprecated.
+        TYPE_MESSAGE        = 11,  // Length-delimited message.
+
+        TYPE_BYTES          = 12,  // Arbitrary byte array.
+        TYPE_UINT32         = 13,  // uint32, varint on the wire
+        TYPE_ENUM           = 14,  // Enum, varint on the wire
+        TYPE_SFIXED32       = 15,  // int32, exactly four bytes on the wire
+        TYPE_SFIXED64       = 16,  // int64, exactly eight bytes on the wire
+        TYPE_SINT32         = 17,  // int32, ZigZag-encoded varint on the wire
+        TYPE_SINT64         = 18,  // int64, ZigZag-encoded varint on the wire
+
+        MAX_TYPE            = 18,  // Constant useful for defining lookup tables
+                                    // indexed by Type.
+    };
+
+
+    Type type() const;
     std::string typeName() const;
+    std::string containingMessageType() const;
 private:
     MessageField(const google::protobuf::FieldDescriptor* fieldDescriptor);
 private:
-
     const google::protobuf::FieldDescriptor* fieldDescriptor;
+    std::string _name;
+    std::string _fullName;
+    std::string _jsonName;
+    int _number;
+    Label _label;
+    Type _type;
+    bool _isPackable;
+    bool _isPacked;
+    bool _isMap;
+    std::string _typeName;
+    std::string _containingMessageName;
     friend class ProtoMessage;
 };
 
@@ -66,6 +118,9 @@ private:
     const google::protobuf::Descriptor* messageDescriptor;
     std::vector<MessageField> messageFields;
     std::vector<ProtoEnum> messageEnums;
+    std::vector<ProtoMessage> internalMessages;
+    std::string _name;
+    std::string _fullName;
     friend class ProtoFile;
 };
 
@@ -81,6 +136,8 @@ private:
 private:
     const google::protobuf::FileDescriptor* fileDescriptor;
     std::vector<ProtoMessage> protoMessages;
+    std::string _name;
+    std::string _package;
     friend class ProtoFileLoader;
 };
 

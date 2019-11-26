@@ -42,7 +42,6 @@ class ProtoFileLoader
 
 public:
     ProtoFileLoader();
-    //should this be a static method?
     ProtoFile loadFile(const std::string& file,std::vector<std::string>& includePaths);
 };
 
