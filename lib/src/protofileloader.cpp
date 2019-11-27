@@ -24,21 +24,20 @@ public:
     std::vector<ProtoFileLoaderError> warnings;
 };
 
-ProtoFileLoader::ProtoFileLoader()
+ProtoFileLoader::ProtoFileLoader():diskSourceTree(std::make_unique<google::protobuf::compiler::DiskSourceTree>()),
+    errorCollector(std::make_unique<ProtoFileLoaderErrorCollector>()),
+    importer(std::make_unique<google::protobuf::compiler::Importer>(diskSourceTree.get(),errorCollector.get()))
 {
+    diskSourceTree->MapPath("",".");
 }
+ProtoFileLoader::~ProtoFileLoader() = default;
 
 ProtoFile ProtoFileLoader::loadFile(const std::string& file,std::vector<std::string>& includePaths)
 {
     LOG(INFO) << "Loading file "<<file<<std::endl;
 
-    google::protobuf::compiler::DiskSourceTree diskSourceTree;
-    ProtoFileLoaderErrorCollector errorCollector;
-    google::protobuf::compiler::Importer importer(&diskSourceTree,&errorCollector);    
-    diskSourceTree.MapPath("",".");
-
     std::string virtualFile,shadowingDiskFile;
-    auto result = diskSourceTree.DiskFileToVirtualFile(file,&virtualFile,&shadowingDiskFile);
+    auto result = diskSourceTree->DiskFileToVirtualFile(file,&virtualFile,&shadowingDiskFile);
     switch (result) {
         case google::protobuf::compiler::DiskSourceTree::SUCCESS:
         break;
@@ -51,9 +50,9 @@ ProtoFile ProtoFileLoader::loadFile(const std::string& file,std::vector<std::str
     }
     for(const auto& path : includePaths)
     {
-        diskSourceTree.MapPath("",path);
+        diskSourceTree->MapPath("",path);
     }
-    auto descriptor = importer.Import(file);
+    auto descriptor = importer->Import(file);
     if(descriptor)
     {
         ProtoFile file(descriptor);
@@ -61,7 +60,7 @@ ProtoFile ProtoFileLoader::loadFile(const std::string& file,std::vector<std::str
     }
     else
     {
-        throw ProtoFileLoaderException(errorCollector.errors,errorCollector.warnings);
+        throw ProtoFileLoaderException(errorCollector->errors,errorCollector->warnings);
     }
     /*for(int i=0;i<descriptor->message_type_count();i++)
     {

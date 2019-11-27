@@ -8,8 +8,17 @@
 
 #include "protofile.h"
 
-namespace tbm {
+namespace google {
+namespace protobuf {
+namespace compiler {
+    
+class DiskSourceTree;
+class Importer;
+ 
+}}}
 
+namespace tbm {
+class ProtoFileLoaderErrorCollector;
 struct ProtoFileLoaderError {
     ProtoFileLoaderError(){}
     ProtoFileLoaderError(const std::string& filename, int line, int column,
@@ -42,7 +51,12 @@ class ProtoFileLoader
 
 public:
     ProtoFileLoader();
+    ~ProtoFileLoader();
     ProtoFile loadFile(const std::string& file,std::vector<std::string>& includePaths);
+private:
+    std::unique_ptr<google::protobuf::compiler::DiskSourceTree> diskSourceTree;
+    std::unique_ptr<ProtoFileLoaderErrorCollector> errorCollector;
+    std::unique_ptr<google::protobuf::compiler::Importer> importer;
 };
 
 }

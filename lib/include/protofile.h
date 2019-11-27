@@ -26,8 +26,6 @@ private:
     ProtoEnum(const google::protobuf::EnumDescriptor* enumDescriptor);   
 private:
     const google::protobuf::EnumDescriptor* enumDescriptor;
-    std::string _name;
-    std::string _fullName;    
     std::vector<std::string> _values;
     friend class ProtoMessage;
 };
@@ -80,9 +78,8 @@ public:
         TYPE_SINT64         = 18,  // int64, ZigZag-encoded varint on the wire
 
         MAX_TYPE            = 18,  // Constant useful for defining lookup tables
-                                    // indexed by Type.
+        // indexed by Type.
     };
-
 
     Type type() const;
     std::string typeName() const;
@@ -91,17 +88,6 @@ private:
     MessageField(const google::protobuf::FieldDescriptor* fieldDescriptor);
 private:
     const google::protobuf::FieldDescriptor* fieldDescriptor;
-    std::string _name;
-    std::string _fullName;
-    std::string _jsonName;
-    int _number;
-    Label _label;
-    Type _type;
-    bool _isPackable;
-    bool _isPacked;
-    bool _isMap;
-    std::string _typeName;
-    std::string _containingMessageName;
     friend class ProtoMessage;
 };
 
@@ -119,8 +105,6 @@ private:
     std::vector<MessageField> messageFields;
     std::vector<ProtoEnum> messageEnums;
     std::vector<ProtoMessage> internalMessages;
-    std::string _name;
-    std::string _fullName;
     friend class ProtoFile;
 };
 
@@ -136,8 +120,6 @@ private:
 private:
     const google::protobuf::FileDescriptor* fileDescriptor;
     std::vector<ProtoMessage> protoMessages;
-    std::string _name;
-    std::string _package;
     friend class ProtoFileLoader;
 };
 

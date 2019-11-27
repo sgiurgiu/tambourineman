@@ -10,8 +10,6 @@ ProtoFile::ProtoFile()
 ProtoFile::ProtoFile(const google::protobuf::FileDescriptor* fileDescriptor):
     fileDescriptor(fileDescriptor)
 {
-    _name = fileDescriptor->name();
-    _package = fileDescriptor->package();
     for(int i=0;i<fileDescriptor->message_type_count();i++)
     {
         protoMessages.push_back(ProtoMessage(fileDescriptor->message_type(i)));
@@ -23,14 +21,14 @@ const std::vector<ProtoMessage>& ProtoFile::messages() const
 }
 std::string ProtoFile::name() const
 {
-    return _name;
+    return fileDescriptor->name();
 }
 std::string ProtoFile::package() const
 {
-    return _package;
+    return fileDescriptor->package();
 }
 ProtoMessage::ProtoMessage(const google::protobuf::Descriptor* messageDescriptor):
-    messageDescriptor(messageDescriptor),_name(messageDescriptor->name()),_fullName(messageDescriptor->full_name())
+    messageDescriptor(messageDescriptor)
 {
     for(int i=0;i<messageDescriptor->field_count();i++)
     {
@@ -44,15 +42,14 @@ ProtoMessage::ProtoMessage(const google::protobuf::Descriptor* messageDescriptor
     {
         internalMessages.push_back(ProtoMessage(messageDescriptor->nested_type(i)));
     }
-    
 }
 std::string ProtoMessage::name() const
 {
-    return _name;
+    return messageDescriptor->name();
 }
 std::string ProtoMessage::fullName() const
 {
-    return _fullName;
+    return messageDescriptor->full_name();
 }
 const std::vector<MessageField>& ProtoMessage::fields() const
 {
@@ -63,12 +60,7 @@ const std::vector<ProtoEnum>& ProtoMessage::enums() const
     return messageEnums;
 }
 MessageField::MessageField(const google::protobuf::FieldDescriptor* fieldDescriptor):
-    fieldDescriptor(fieldDescriptor),_name(fieldDescriptor->name()),_fullName(fieldDescriptor->full_name()),
-    _jsonName(fieldDescriptor->json_name()),_number(fieldDescriptor->number()),
-    _label((Label)(int)fieldDescriptor->label()),_type((Type)(int)fieldDescriptor->type()),
-    _isPackable(fieldDescriptor->is_packable()),_isPacked(fieldDescriptor->is_packed()),
-    _isMap(fieldDescriptor->is_map()),_typeName(fieldDescriptor->type_name()),
-    _containingMessageName(fieldDescriptor->containing_type()->name())
+    fieldDescriptor(fieldDescriptor)
 {    
         auto msgt = fieldDescriptor->message_type();
         if(msgt)
@@ -78,52 +70,51 @@ MessageField::MessageField(const google::protobuf::FieldDescriptor* fieldDescrip
 }
 std::string MessageField::name() const
 {
-    return _name;
+    return fieldDescriptor->name();
 }
 std::string MessageField::fullName() const
 {
-    return _fullName;
+    return fieldDescriptor->full_name();
 }
 std::string MessageField::jsonName() const
 {
-    return _jsonName;
+    return fieldDescriptor->json_name();
 }
 std::string MessageField::containingMessageType() const
 {
-    return _containingMessageName;
+    return fieldDescriptor->containing_type()->name();
 }
 int MessageField::number() const
 {
-    return _number;
+    return fieldDescriptor->number();
 }
 bool MessageField::isPackable() const
 {
-    return _isPackable;
+    return fieldDescriptor->is_packable();
 }
 bool MessageField::isPacked() const
 {
-    return _isPacked;
+    return fieldDescriptor->is_packed();
 }
 bool MessageField::isMap() const
 {
-    return _isMap;
+    return fieldDescriptor->is_map();
 }
 MessageField::Type MessageField::type() const
 {
-    return _type;
+    return static_cast<MessageField::Type>(fieldDescriptor->type());
 }
 std::string MessageField::typeName() const
 {
-    return _typeName;
+    return fieldDescriptor->type_name();
 }
 MessageField::Label MessageField::label() const 
 {
-    return _label;
+    return static_cast<MessageField::Label>(fieldDescriptor->label());
 }
 
 ProtoEnum::ProtoEnum(const google::protobuf::EnumDescriptor* enumDescriptor):
-    enumDescriptor(enumDescriptor),_name(enumDescriptor->name()),_fullName(enumDescriptor->full_name()),
-    _values(enumDescriptor->value_count())
+    enumDescriptor(enumDescriptor),_values(enumDescriptor->value_count())
 {
     for(int i=0;i<enumDescriptor->value_count();i++)
     {
@@ -132,11 +123,11 @@ ProtoEnum::ProtoEnum(const google::protobuf::EnumDescriptor* enumDescriptor):
 }
 std::string ProtoEnum::name() const
 {
-    return _name;
+    return enumDescriptor->name();
 }
 std::string ProtoEnum::fullName() const
 {
-    return _fullName;
+    return enumDescriptor->full_name();
 }
 std::vector<std::string> ProtoEnum::values()
 {
