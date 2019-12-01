@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include <memory>
 
 namespace google {
 namespace protobuf {
@@ -15,6 +16,7 @@ class EnumDescriptor;
 }}
 
 namespace tbm {
+class ProtoMessage;
 
 class ProtoEnum
 {
@@ -28,6 +30,7 @@ private:
     const google::protobuf::EnumDescriptor* enumDescriptor;
     std::vector<std::string> _values;
     friend class ProtoMessage;
+    friend class MessageField;
 };
 
 class MessageField
@@ -84,11 +87,13 @@ public:
     Type type() const;
     std::string typeName() const;
     std::string containingMessageType() const;
+    std::unique_ptr<ProtoMessage> messageType() const;
+    std::unique_ptr<ProtoEnum> enumType() const;
 private:
     MessageField(const google::protobuf::FieldDescriptor* fieldDescriptor);
 private:
     const google::protobuf::FieldDescriptor* fieldDescriptor;
-    friend class ProtoMessage;
+    friend class ProtoMessage;    
 };
 
 class ProtoMessage
@@ -106,6 +111,7 @@ private:
     std::vector<ProtoEnum> messageEnums;
     std::vector<ProtoMessage> internalMessages;
     friend class ProtoFile;
+    friend class MessageField;
 };
 
 class ProtoFile

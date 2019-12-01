@@ -68,6 +68,31 @@ MessageField::MessageField(const google::protobuf::FieldDescriptor* fieldDescrip
             LOG(INFO) << "Message type "<<msgt->name();
         }
 }
+std::unique_ptr<ProtoMessage> MessageField::messageType() const
+{
+    auto descriptor = fieldDescriptor->message_type();
+    if(descriptor)
+    {
+        return std::unique_ptr<ProtoMessage>(new ProtoMessage(descriptor));
+    }
+    else 
+    {
+        return std::unique_ptr<ProtoMessage>();
+    }
+}
+std::unique_ptr<ProtoEnum> MessageField::enumType() const
+{
+    auto enumType = fieldDescriptor->enum_type();
+    if(enumType)
+    {
+        return std::unique_ptr<ProtoEnum>(new ProtoEnum(enumType));
+    }
+    else
+    {
+        return std::unique_ptr<ProtoEnum>();
+    }     
+}
+
 std::string MessageField::name() const
 {
     return fieldDescriptor->name();

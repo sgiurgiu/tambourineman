@@ -29,10 +29,30 @@ TEST(ProtoFileLoader, loadFile)
     
     ASSERT_EQ(person.fields()[3].typeName(),"message");
     ASSERT_EQ(person.fields()[3].containingMessageType(),"Person");
-
-    //ASSERT_TRUE(loader.HasMember("source"));
-//    auto source = (*doc)["source"].GetString();
-//    ASSERT_STREQ("file", source);
+    
+    auto message_id = person.fields()[1].messageType();
+    ASSERT_FALSE(message_id);
+    
+    auto message_phones = person.fields()[3].messageType();
+    ASSERT_TRUE(message_phones);
+    ASSERT_EQ(message_phones->name(),"PhoneNumber");
+    ASSERT_EQ(message_phones->fullName(),"tutorial.Person.PhoneNumber");
+    ASSERT_EQ(message_phones->fields().size(),2);
+    
+    ASSERT_EQ(message_phones->fields()[0].name(),"number");
+    ASSERT_EQ(message_phones->fields()[0].type(),MessageField::Type::TYPE_STRING);
+    ASSERT_EQ(message_phones->fields()[1].name(),"type");
+    ASSERT_EQ(message_phones->fields()[1].type(),MessageField::Type::TYPE_ENUM);
+    
+    auto phone_type_enum_message = message_phones->fields()[1].enumType();
+    ASSERT_TRUE(phone_type_enum_message);
+    ASSERT_EQ(phone_type_enum_message->name(),"PhoneType");    
+    ASSERT_EQ(phone_type_enum_message->fullName(),"tutorial.Person.PhoneType");    
+    auto values = phone_type_enum_message->values();
+    ASSERT_EQ(values.size(),3);
+    ASSERT_EQ(values[0],"MOBILE");
+    ASSERT_EQ(values[1],"HOME");
+    ASSERT_EQ(values[2],"WORK");    
 }
 
 /*
