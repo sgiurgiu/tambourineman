@@ -9,9 +9,7 @@
 using namespace tbm;
 
 TEST(ProtoMessageSerializer, serializeMessage)
-{
-    GOOGLE_PROTOBUF_VERIFY_VERSION;
-    
+{  
     ProtoFileLoader loader;
     std::vector<std::string> paths = {"test/data/"};
     auto file = loader.loadFile("test/data/addressbook.proto", paths);
@@ -21,29 +19,29 @@ TEST(ProtoMessageSerializer, serializeMessage)
     auto person = messages[0];
     
     std::string serialized_message;
-    {
-        tutorial::AddressBook addressbook;    
-        tutorial::Person* person_message = addressbook.add_people();
-        person_message->set_email("person@example.com");
-        person_message->set_name("Example Person");
-        person_message->set_id(11);
-        *person_message->mutable_last_updated() = google::protobuf::util::TimeUtil::SecondsToTimestamp(10);
-        auto phone_home = person_message->add_phones();
+    {        
+        tutorial::Person person_message;
+        person_message.set_email("person@example.com");
+        person_message.set_name("Example Person");
+        person_message.set_id(11);
+        *person_message.mutable_last_updated() = google::protobuf::util::TimeUtil::SecondsToTimestamp(10);
+        auto phone_home = person_message.add_phones();
         phone_home->set_number("1234567890");
         phone_home->set_type(tutorial::Person_PhoneType::Person_PhoneType_HOME);    
-        auto phone_mobile = person_message->add_phones();
+        auto phone_mobile = person_message.add_phones();
         phone_mobile->set_number("0987654321");
         phone_mobile->set_type(tutorial::Person_PhoneType::Person_PhoneType_MOBILE);
-        serialized_message = addressbook.SerializeAsString();
+        serialized_message = person_message.SerializeAsString();
+        
+        std::cout << person_message.DebugString() <<std::endl;
     }
-    std::string jsonMessage = "{'people':[{'name':'Example Person','email':'person@example.com',"
-    "'id':11,'last_updated':{'seconds':10,'nanos':0},'phones':[{'number':'1234567890','type':'HOME'},{'number':'0987654321','type':'MOBILE'}]"
-    "}]}";
+    std::string jsonMessage = "{'name':'Example Person','email':'person@example.com',"
+    "'id':11,'last_updated':{'seconds':10,'nanos':0},"
+    "'phones':[{'number':'1234567890','type':'HOME'},{'number':'0987654321','type':'MOBILE'}]}"
+    ;
     
     ProtoMessageSerializer messageSerializer(&person);    
     auto ourSerializedMessage = messageSerializer.serializeMessage(jsonMessage);
-    
-    
-    ASSERT_EQ(ourSerializedMessage,serialized_message);
-    
+        
+    ASSERT_EQ(ourSerializedMessage,serialized_message);    
 }

@@ -27,6 +27,7 @@
 
 #include "protomessageserializer.h"
 #include "protofile.h"
+#include "json.hpp"
 
 namespace tbm {
 
@@ -35,6 +36,13 @@ ProtoMessageSerializer::ProtoMessageSerializer(ProtoMessage* message):message(me
 
 std::string ProtoMessageSerializer::serializeMessage(const std::string& jsonMessage, bool binary) const
 {
+    using json = nlohmann::json;
+    auto msg = json::parse(jsonMessage);    
+    auto& fields = message->fields();
+    
+    
+    
+    
     return "";
 }
 
