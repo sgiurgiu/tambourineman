@@ -29,6 +29,7 @@ ProtoFileLoader::ProtoFileLoader():diskSourceTree(std::make_unique<google::proto
     importer(std::make_unique<google::protobuf::compiler::Importer>(diskSourceTree.get(),errorCollector.get()))
 {
     diskSourceTree->MapPath("",".");
+    diskSourceTree->MapPath("","/usr/include/");
 }
 ProtoFileLoader::~ProtoFileLoader() = default;
 

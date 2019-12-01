@@ -19,8 +19,26 @@ add_subdirectory(${CMAKE_BINARY_DIR}/googletest-src
                  ${CMAKE_BINARY_DIR}/googletest-build
                  EXCLUDE_FROM_ALL)
 
-# Now simply link against gtest or gtest_main as needed. Eg
-add_executable(tbm_test src/main.cpp)
+                 
+#find_package(Protobuf REQUIRED)
+find_package(Threads REQUIRED)
+                 
+
+
+set(TBM_TEST_SRCS src/test_protofileloader.cpp
+                src/test_protomessageserializer.cpp
+                )
+                
+set(PROTO_MSGS_SRCS proto_cpp/addressbook.pb.cc   
+
+    )
+
+include_directories(proto_cpp/ ${Protobuf_INCLUDE_DIRS})
+
+add_executable(tbm_test ${TBM_TEST_SRCS} ${PROTO_MSGS_SRCS})
 
 #target_compile_features(json_utils_test PRIVATE cxx_auto_type)
-target_link_libraries(tbm_test gtest_main TBM::tbm)
+target_link_libraries(tbm_test PUBLIC Threads::Threads )
+#target_link_libraries(tbm_test PRIVATE ${Protobuf_LIBRARIES})
+target_link_libraries(tbm_test PUBLIC gtest_main TBM::tbm )
+
