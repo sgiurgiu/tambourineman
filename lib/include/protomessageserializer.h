@@ -29,13 +29,25 @@
 #define TBM_PROTOMESSAGESERIALIZER_H
 
 #include <string>
+#include <stdexcept>
+#include "json.hpp"
+#include "protofile.h"
 
 namespace tbm {
 
 class ProtoMessage;
 
+class InvalidMessageException : public std::runtime_error
+{
+    using std::runtime_error::runtime_error;
+};
+class NotImplementedFieldException : public std::runtime_error
+{
+    using std::runtime_error::runtime_error;
+};
+
 /**
- * Serilializes a proto message
+ * Seriliazes a proto message
  */
 class ProtoMessageSerializer {
 public:
@@ -50,6 +62,13 @@ public:
      */
     std::string serializeMessage(const std::string& jsonMessage, bool binary = true) const;
   
+private:
+    void validateJsonMessage(const nlohmann::json& msg) const;
+    size_t calculateMessageSize(const nlohmann::json& msg) const;
+    size_t calculateFieldSize(const MessageField& field, const nlohmann::json& value) const;
+    nlohmann::json::const_iterator findJsonMember(const MessageField& field,const nlohmann::json& msg) const;
+    uint8_t* writeMessageField(const MessageField& field,const nlohmann::json& value, uint8_t* target) const;
+    uint8_t* writeMessage(const nlohmann::json& value, uint8_t* target) const;
 private:
     ProtoMessage* message;
 };

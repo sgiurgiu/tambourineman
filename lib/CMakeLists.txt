@@ -12,7 +12,8 @@ file(GLOB_RECURSE LIB_HEADERS *.h *.hpp )
 set(LIB_NAME tbm)
 set (TBM_SRCS src/protofileloader.cpp
         src/protofile.cpp
-        src/protomessageserializer.cpp)
+        src/protomessageserializer.cpp
+        src/base64.cpp)
 
 include_directories("${CMAKE_SOURCE_DIR}/lib/include" ${Protobuf_INCLUDE_DIRS}
     ${EASYLOGGING_INCLUDE})
