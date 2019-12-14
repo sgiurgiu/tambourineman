@@ -15,7 +15,7 @@ TEST(ProtoFileLoader, loadFile)
     auto addressbook = messages[1];
     ASSERT_EQ(person.name(),"Person");
     ASSERT_EQ(person.fullName(),"tutorial.Person");
-    ASSERT_EQ(person.fields().size(),5);
+    ASSERT_EQ(person.fields().size(),17);
     ASSERT_EQ(person.fields()[0].name(),"name");
     ASSERT_EQ(person.fields()[0].type(),MessageField::Type::TYPE_STRING);
     ASSERT_EQ(person.fields()[1].name(),"id");

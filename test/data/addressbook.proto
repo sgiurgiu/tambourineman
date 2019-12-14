@@ -42,6 +42,19 @@ message Person {
   repeated PhoneNumber phones = 4;
 
   google.protobuf.Timestamp last_updated = 5;
+
+  int64 new_int64 = 6;
+  double new_double = 7;
+  float new_float = 8;
+  uint32 new_uint32 = 9;
+  uint64 new_uint64 = 10;
+  sint32 new_sint32 = 11;
+  sint64 new_sint64 = 12;
+  fixed32 new_fixed32 = 13;
+  fixed64 new_fixed64 = 14;
+  sfixed32 new_sfixed32 = 15;
+  sfixed64 new_sfixed64 = 16;
+  bool new_bool = 17;
 }
 
 // Our address book file is just one of these.

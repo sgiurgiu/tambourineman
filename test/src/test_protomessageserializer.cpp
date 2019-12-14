@@ -20,6 +20,7 @@ TEST(ProtoMessageSerializer, validateIncorrectMessage)
 
     try
     {
+        //here name is an object instead of a string
         std::string jsonMessage = R"({"name":{},"email":"person@example.com",
         "id":11,"last_updated":{"seconds":10,"nanos":0},
         "phones":[{"number":"1234567890","type":"HOME"},{"number":"0987654321","type":"MOBILE"}]})"
@@ -47,14 +48,16 @@ TEST(ProtoMessageSerializer, validateCorrectMessage)
     std::string jsonMessage = R"({"name":"Example Person","email":"person@example.com",
     "id":11,"last_updated":{"seconds":10,"nanos":0},
     "phones":[{"number":"1234567890","type":"HOME"},
-    {"number":"0987654321","type":"MOBILE"}]})"
+    {"number":"0987654321","type":"MOBILE"}], "new_int64":12, "new_double":0.3,
+    "new_float":1.3,"new_uint32":11,"new_uint64":12,"new_sint32":-12,"new_sint64":-20,
+    "new_fixed32":12,"new_fixed64":13,"new_sfixed32":-12,"new_sfixed64":-2,"new_bool":true})"
     ;
 
     ProtoMessageSerializer messageSerializer(&person);
     messageSerializer.serializeMessage(jsonMessage);
 
 }
-TEST(ProtoMessageSerializer, serializeMessage)
+TEST(ProtoMessageSerializer, serializePersonMessage)
 {  
     ProtoFileLoader loader;
     std::vector<std::string> paths = {"test/data/"};
@@ -64,8 +67,8 @@ TEST(ProtoMessageSerializer, serializeMessage)
     ASSERT_EQ(file.package(),"tutorial");
     auto person = messages[0];
     
-   // std::string serialized_message;
-
+    std::string serialized_message;
+    {
         tutorial::Person person_message;
         person_message.set_email("person@example.com");
         person_message.set_name("Example Person");
@@ -77,21 +80,36 @@ TEST(ProtoMessageSerializer, serializeMessage)
         auto phone_mobile = person_message.add_phones();
         phone_mobile->set_number("0987654321");
         phone_mobile->set_type(tutorial::Person_PhoneType::Person_PhoneType_MOBILE);
-    auto    serialized_message = person_message.SerializeAsString();
-        
+        person_message.set_new_bool(true);
+        person_message.set_new_double(0.3);
+        person_message.set_new_fixed32(12);
+        person_message.set_new_fixed64(13);
+        person_message.set_new_float(1.3f);
+        person_message.set_new_int64(12);
+        person_message.set_new_sfixed32(-12);
+        person_message.set_new_sfixed64(-2);
+        person_message.set_new_sint32(-12);
+        person_message.set_new_sint64(-20);
+        person_message.set_new_uint32(11);
+        person_message.set_new_uint64(12);
 
+        serialized_message = person_message.SerializeAsString();
+    }
 
     std::string jsonMessage = R"({"name":"Example Person","email":"person@example.com",
     "id":11,"last_updated":{"seconds":10,"nanos":0},
-    "phones":[{"number":"1234567890","type":"HOME"},{"number":"0987654321","type":"MOBILE"}]})"
+    "phones":[{"number":"1234567890","type":"HOME"},
+    {"number":"0987654321","type":"MOBILE"}], "new_int64":12, "new_double":0.3,
+    "new_float":1.3,"new_uint32":11,"new_uint64":12,"new_sint32":-12,"new_sint64":-20,
+    "new_fixed32":12,"new_fixed64":13,"new_sfixed32":-12,"new_sfixed64":-2,"new_bool":true})"
     ;
-    
+
     ProtoMessageSerializer messageSerializer(&person);    
     auto ourSerializedMessage = messageSerializer.serializeMessage(jsonMessage);
 
-    std::cout << serialized_message <<std::endl;
-    std::cout << "protobuf serliazed size:"<<serialized_message.size() <<"\n";
-    std::cout << "our serliazed size:"<<ourSerializedMessage.size() <<"\n";
+    //std::cout << serialized_message <<std::endl;
+    //std::cout << "protobuf serliazed size:"<<serialized_message.size() <<"\n";
+    //std::cout << "our serliazed size:"<<ourSerializedMessage.size() <<"\n";
         
     ASSERT_EQ(ourSerializedMessage,serialized_message);    
 }

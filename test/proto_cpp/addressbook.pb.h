@@ -384,6 +384,78 @@ class Person : public ::google::protobuf::Message /* @@protoc_insertion_point(cl
   ::google::protobuf::int32 id() const;
   void set_id(::google::protobuf::int32 value);
 
+  // float new_float = 8;
+  void clear_new_float();
+  static const int kNewFloatFieldNumber = 8;
+  float new_float() const;
+  void set_new_float(float value);
+
+  // int64 new_int64 = 6;
+  void clear_new_int64();
+  static const int kNewInt64FieldNumber = 6;
+  ::google::protobuf::int64 new_int64() const;
+  void set_new_int64(::google::protobuf::int64 value);
+
+  // double new_double = 7;
+  void clear_new_double();
+  static const int kNewDoubleFieldNumber = 7;
+  double new_double() const;
+  void set_new_double(double value);
+
+  // uint64 new_uint64 = 10;
+  void clear_new_uint64();
+  static const int kNewUint64FieldNumber = 10;
+  ::google::protobuf::uint64 new_uint64() const;
+  void set_new_uint64(::google::protobuf::uint64 value);
+
+  // uint32 new_uint32 = 9;
+  void clear_new_uint32();
+  static const int kNewUint32FieldNumber = 9;
+  ::google::protobuf::uint32 new_uint32() const;
+  void set_new_uint32(::google::protobuf::uint32 value);
+
+  // sint32 new_sint32 = 11;
+  void clear_new_sint32();
+  static const int kNewSint32FieldNumber = 11;
+  ::google::protobuf::int32 new_sint32() const;
+  void set_new_sint32(::google::protobuf::int32 value);
+
+  // sint64 new_sint64 = 12;
+  void clear_new_sint64();
+  static const int kNewSint64FieldNumber = 12;
+  ::google::protobuf::int64 new_sint64() const;
+  void set_new_sint64(::google::protobuf::int64 value);
+
+  // fixed64 new_fixed64 = 14;
+  void clear_new_fixed64();
+  static const int kNewFixed64FieldNumber = 14;
+  ::google::protobuf::uint64 new_fixed64() const;
+  void set_new_fixed64(::google::protobuf::uint64 value);
+
+  // fixed32 new_fixed32 = 13;
+  void clear_new_fixed32();
+  static const int kNewFixed32FieldNumber = 13;
+  ::google::protobuf::uint32 new_fixed32() const;
+  void set_new_fixed32(::google::protobuf::uint32 value);
+
+  // sfixed32 new_sfixed32 = 15;
+  void clear_new_sfixed32();
+  static const int kNewSfixed32FieldNumber = 15;
+  ::google::protobuf::int32 new_sfixed32() const;
+  void set_new_sfixed32(::google::protobuf::int32 value);
+
+  // sfixed64 new_sfixed64 = 16;
+  void clear_new_sfixed64();
+  static const int kNewSfixed64FieldNumber = 16;
+  ::google::protobuf::int64 new_sfixed64() const;
+  void set_new_sfixed64(::google::protobuf::int64 value);
+
+  // bool new_bool = 17;
+  void clear_new_bool();
+  static const int kNewBoolFieldNumber = 17;
+  bool new_bool() const;
+  void set_new_bool(bool value);
+
   // @@protoc_insertion_point(class_scope:tutorial.Person)
  private:
 
@@ -393,6 +465,18 @@ class Person : public ::google::protobuf::Message /* @@protoc_insertion_point(cl
   ::google::protobuf::internal::ArenaStringPtr email_;
   ::google::protobuf::Timestamp* last_updated_;
   ::google::protobuf::int32 id_;
+  float new_float_;
+  ::google::protobuf::int64 new_int64_;
+  double new_double_;
+  ::google::protobuf::uint64 new_uint64_;
+  ::google::protobuf::uint32 new_uint32_;
+  ::google::protobuf::int32 new_sint32_;
+  ::google::protobuf::int64 new_sint64_;
+  ::google::protobuf::uint64 new_fixed64_;
+  ::google::protobuf::uint32 new_fixed32_;
+  ::google::protobuf::int32 new_sfixed32_;
+  ::google::protobuf::int64 new_sfixed64_;
+  bool new_bool_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
   friend struct ::protobuf_addressbook_2eproto::TableStruct;
 };
@@ -784,6 +868,174 @@ inline void Person::set_allocated_last_updated(::google::protobuf::Timestamp* la
   }
   last_updated_ = last_updated;
   // @@protoc_insertion_point(field_set_allocated:tutorial.Person.last_updated)
+}
+
+// int64 new_int64 = 6;
+inline void Person::clear_new_int64() {
+  new_int64_ = GOOGLE_LONGLONG(0);
+}
+inline ::google::protobuf::int64 Person::new_int64() const {
+  // @@protoc_insertion_point(field_get:tutorial.Person.new_int64)
+  return new_int64_;
+}
+inline void Person::set_new_int64(::google::protobuf::int64 value) {
+  
+  new_int64_ = value;
+  // @@protoc_insertion_point(field_set:tutorial.Person.new_int64)
+}
+
+// double new_double = 7;
+inline void Person::clear_new_double() {
+  new_double_ = 0;
+}
+inline double Person::new_double() const {
+  // @@protoc_insertion_point(field_get:tutorial.Person.new_double)
+  return new_double_;
+}
+inline void Person::set_new_double(double value) {
+  
+  new_double_ = value;
+  // @@protoc_insertion_point(field_set:tutorial.Person.new_double)
+}
+
+// float new_float = 8;
+inline void Person::clear_new_float() {
+  new_float_ = 0;
+}
+inline float Person::new_float() const {
+  // @@protoc_insertion_point(field_get:tutorial.Person.new_float)
+  return new_float_;
+}
+inline void Person::set_new_float(float value) {
+  
+  new_float_ = value;
+  // @@protoc_insertion_point(field_set:tutorial.Person.new_float)
+}
+
+// uint32 new_uint32 = 9;
+inline void Person::clear_new_uint32() {
+  new_uint32_ = 0u;
+}
+inline ::google::protobuf::uint32 Person::new_uint32() const {
+  // @@protoc_insertion_point(field_get:tutorial.Person.new_uint32)
+  return new_uint32_;
+}
+inline void Person::set_new_uint32(::google::protobuf::uint32 value) {
+  
+  new_uint32_ = value;
+  // @@protoc_insertion_point(field_set:tutorial.Person.new_uint32)
+}
+
+// uint64 new_uint64 = 10;
+inline void Person::clear_new_uint64() {
+  new_uint64_ = GOOGLE_ULONGLONG(0);
+}
+inline ::google::protobuf::uint64 Person::new_uint64() const {
+  // @@protoc_insertion_point(field_get:tutorial.Person.new_uint64)
+  return new_uint64_;
+}
+inline void Person::set_new_uint64(::google::protobuf::uint64 value) {
+  
+  new_uint64_ = value;
+  // @@protoc_insertion_point(field_set:tutorial.Person.new_uint64)
+}
+
+// sint32 new_sint32 = 11;
+inline void Person::clear_new_sint32() {
+  new_sint32_ = 0;
+}
+inline ::google::protobuf::int32 Person::new_sint32() const {
+  // @@protoc_insertion_point(field_get:tutorial.Person.new_sint32)
+  return new_sint32_;
+}
+inline void Person::set_new_sint32(::google::protobuf::int32 value) {
+  
+  new_sint32_ = value;
+  // @@protoc_insertion_point(field_set:tutorial.Person.new_sint32)
+}
+
+// sint64 new_sint64 = 12;
+inline void Person::clear_new_sint64() {
+  new_sint64_ = GOOGLE_LONGLONG(0);
+}
+inline ::google::protobuf::int64 Person::new_sint64() const {
+  // @@protoc_insertion_point(field_get:tutorial.Person.new_sint64)
+  return new_sint64_;
+}
+inline void Person::set_new_sint64(::google::protobuf::int64 value) {
+  
+  new_sint64_ = value;
+  // @@protoc_insertion_point(field_set:tutorial.Person.new_sint64)
+}
+
+// fixed32 new_fixed32 = 13;
+inline void Person::clear_new_fixed32() {
+  new_fixed32_ = 0u;
+}
+inline ::google::protobuf::uint32 Person::new_fixed32() const {
+  // @@protoc_insertion_point(field_get:tutorial.Person.new_fixed32)
+  return new_fixed32_;
+}
+inline void Person::set_new_fixed32(::google::protobuf::uint32 value) {
+  
+  new_fixed32_ = value;
+  // @@protoc_insertion_point(field_set:tutorial.Person.new_fixed32)
+}
+
+// fixed64 new_fixed64 = 14;
+inline void Person::clear_new_fixed64() {
+  new_fixed64_ = GOOGLE_ULONGLONG(0);
+}
+inline ::google::protobuf::uint64 Person::new_fixed64() const {
+  // @@protoc_insertion_point(field_get:tutorial.Person.new_fixed64)
+  return new_fixed64_;
+}
+inline void Person::set_new_fixed64(::google::protobuf::uint64 value) {
+  
+  new_fixed64_ = value;
+  // @@protoc_insertion_point(field_set:tutorial.Person.new_fixed64)
+}
+
+// sfixed32 new_sfixed32 = 15;
+inline void Person::clear_new_sfixed32() {
+  new_sfixed32_ = 0;
+}
+inline ::google::protobuf::int32 Person::new_sfixed32() const {
+  // @@protoc_insertion_point(field_get:tutorial.Person.new_sfixed32)
+  return new_sfixed32_;
+}
+inline void Person::set_new_sfixed32(::google::protobuf::int32 value) {
+  
+  new_sfixed32_ = value;
+  // @@protoc_insertion_point(field_set:tutorial.Person.new_sfixed32)
+}
+
+// sfixed64 new_sfixed64 = 16;
+inline void Person::clear_new_sfixed64() {
+  new_sfixed64_ = GOOGLE_LONGLONG(0);
+}
+inline ::google::protobuf::int64 Person::new_sfixed64() const {
+  // @@protoc_insertion_point(field_get:tutorial.Person.new_sfixed64)
+  return new_sfixed64_;
+}
+inline void Person::set_new_sfixed64(::google::protobuf::int64 value) {
+  
+  new_sfixed64_ = value;
+  // @@protoc_insertion_point(field_set:tutorial.Person.new_sfixed64)
+}
+
+// bool new_bool = 17;
+inline void Person::clear_new_bool() {
+  new_bool_ = false;
+}
+inline bool Person::new_bool() const {
+  // @@protoc_insertion_point(field_get:tutorial.Person.new_bool)
+  return new_bool_;
+}
+inline void Person::set_new_bool(bool value) {
+  
+  new_bool_ = value;
+  // @@protoc_insertion_point(field_set:tutorial.Person.new_bool)
 }
 
 // -------------------------------------------------------------------

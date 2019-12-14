@@ -43,7 +43,7 @@ ProtoMessageSerializer::ProtoMessageSerializer(ProtoMessage* message):message(me
 
 std::string ProtoMessageSerializer::serializeMessage(const std::string& jsonMessage, bool binary) const
 {
-    assert(binary);//not implemented otherwise yet
+    assert(binary);//not implemented text mode yet
     using json = nlohmann::json;
     auto msg = json::parse(jsonMessage);
 
@@ -54,43 +54,7 @@ std::string ProtoMessageSerializer::serializeMessage(const std::string& jsonMess
     }
     std::string output;
     output.resize(totalSize,(char)0);
-    uint8_t* start = reinterpret_cast<uint8_t*>(&(output)[0]);
-
-
-    /*uint8_t* start = reinterpret_cast<uint8_t*>(google::protobuf::io::mutable_string_data(output));
-
-    google::protobuf::io::EpsCopyOutputStream out(
-            start, totalSize,
-            io::CodedOutputStream::IsDefaultSerializationDeterministic());*/
-
-
-    /*
-    size_t old_size = output->size();
-    size_t byte_size = ByteSizeLong();
-      if (byte_size > INT_MAX) {
-        GOOGLE_LOG(ERROR) << GetTypeName()
-                   << " exceeded maximum protobuf size of 2GB: " << byte_size;
-        return false;
-      }
-
-    STLStringResizeUninitialized(output, old_size + byte_size); -> output->resize(new_size);
-
-    uint8* start =
-      reinterpret_cast<uint8*>(io::mutable_string_data(output) + old_size);
-  SerializeToArrayImpl(*this, start, byte_size);
-
- ->  io::EpsCopyOutputStream out(
-        target, size,
-        io::CodedOutputStream::IsDefaultSerializationDeterministic());
-    auto res = msg._InternalSerialize(target, &out);
-
-
-  -> InternalSerializeWithCachedSizesToArray(bool deterministic, ::google::protobuf::uint8* target)
-*/
-    //google::protobuf::io::CodedOutputStream out;
-    //out.WriteVarint64(32);
-    auto target = start;
-    writeMessage(msg,target);
+    writeMessage(msg,reinterpret_cast<uint8_t*>(&(output)[0]));
     return output;
 }
 
@@ -100,6 +64,7 @@ uint8_t* ProtoMessageSerializer::writeMessage(const nlohmann::json& value, uint8
     for(const auto& field : fields)
     {
         auto found = findJsonMember(field,value);
+        if(found == value.end()) continue;
         auto jsonValue = found.value();
 
         if(jsonValue.is_array() && field.label() == MessageField::LABEL_REPEATED)
@@ -332,8 +297,8 @@ size_t ProtoMessageSerializer::calculateMessageSize(const nlohmann::json& msg) c
     auto& fields = message->fields();
     for(const auto& field : fields)
     {
-        //TODO: get this in method
         auto found = findJsonMember(field,msg);
+        if(found == msg.end()) continue;
         auto jsonValue = found.value();
 
         if(jsonValue.is_array() && field.label() == MessageField::LABEL_REPEATED)
@@ -355,6 +320,9 @@ size_t ProtoMessageSerializer::calculateMessageSize(const nlohmann::json& msg) c
 size_t ProtoMessageSerializer::calculateFieldSize(const MessageField& field, const nlohmann::json& value) const
 {
     size_t total_size = 0;
+    //this means that MessageField::FieldType MUST be the same thing as ::google::protobuf::internal::WireFormatLite::FieldType
+    size_t tag_size = ::google::protobuf::internal::WireFormatLite::TagSize(field.number(),
+                          (::google::protobuf::internal::WireFormatLite::FieldType)field.type());
     switch(field.type())
     {
     case MessageField::TYPE_MESSAGE:
@@ -362,7 +330,7 @@ size_t ProtoMessageSerializer::calculateFieldSize(const MessageField& field, con
         auto msg_type = field.messageType();
         ProtoMessageSerializer ser(msg_type.get());
         auto length = ser.calculateMessageSize(value);
-        total_size += 1 + length +  ::google::protobuf::io::CodedOutputStream::VarintSize32(static_cast<uint32_t>(length));
+        total_size += tag_size + length +  ::google::protobuf::io::CodedOutputStream::VarintSize32(static_cast<uint32_t>(length));
     }
         break;
     case MessageField::TYPE_STRING:
@@ -370,7 +338,7 @@ size_t ProtoMessageSerializer::calculateFieldSize(const MessageField& field, con
         auto val = value.get<std::string>();
         if(val.size() > 0)
         {
-            total_size += 1 +
+            total_size += tag_size +
                     ::google::protobuf::internal::WireFormatLite::StringSize(val);
         }
     }
@@ -383,7 +351,7 @@ size_t ProtoMessageSerializer::calculateFieldSize(const MessageField& field, con
             std::string binaryVal = base64_encode(reinterpret_cast<const unsigned char*>(val.c_str()), val.length());
             if(binaryVal.length() > 0)
             {
-            total_size += 1 +
+            total_size += tag_size +
                     ::google::protobuf::internal::WireFormatLite::BytesSize(binaryVal);
             }
         }
@@ -396,7 +364,7 @@ size_t ProtoMessageSerializer::calculateFieldSize(const MessageField& field, con
             auto val = value.get<int>();
             if(val != 0)
             {
-                total_size += 1;
+                total_size += tag_size +
                         ::google::protobuf::internal::WireFormatLite::EnumSize(val);
             }
         }
@@ -411,7 +379,7 @@ size_t ProtoMessageSerializer::calculateFieldSize(const MessageField& field, con
                 auto val = foundStrVal - values.begin();
                 if(val != 0)
                 {
-                    total_size += 1 +
+                    total_size += tag_size +
                             ::google::protobuf::internal::WireFormatLite::EnumSize(val);
                 }
             }
@@ -424,7 +392,7 @@ size_t ProtoMessageSerializer::calculateFieldSize(const MessageField& field, con
         auto val = value.get<int32_t>();
         if(val != 0)
         {
-            total_size += 1 +
+            total_size += tag_size +
                     ::google::protobuf::internal::WireFormatLite::Int32Size(val);
         }
     }
@@ -434,7 +402,7 @@ size_t ProtoMessageSerializer::calculateFieldSize(const MessageField& field, con
         auto val = value.get<int32_t>();
         if(val != 0)
         {
-            total_size += 1 +
+            total_size += tag_size +
                     ::google::protobuf::internal::WireFormatLite::SInt32Size(val);
         }
     }
@@ -444,7 +412,7 @@ size_t ProtoMessageSerializer::calculateFieldSize(const MessageField& field, con
         auto val = value.get<uint32_t>();
         if(val != 0)
         {
-            total_size += 1 +
+            total_size += tag_size +
                     ::google::protobuf::internal::WireFormatLite::UInt32Size(val);
         }
     }
@@ -454,7 +422,7 @@ size_t ProtoMessageSerializer::calculateFieldSize(const MessageField& field, con
         auto val = value.get<int64_t>();
         if(val != 0)
         {
-            total_size += 1 +
+            total_size += tag_size +
                     ::google::protobuf::internal::WireFormatLite::Int64Size(val);
         }
     }
@@ -464,7 +432,7 @@ size_t ProtoMessageSerializer::calculateFieldSize(const MessageField& field, con
         auto val = value.get<int64_t>();
         if(val != 0)
         {
-            total_size += 1 +
+            total_size += tag_size +
                     ::google::protobuf::internal::WireFormatLite::SInt64Size(val);
         }
     }
@@ -474,7 +442,7 @@ size_t ProtoMessageSerializer::calculateFieldSize(const MessageField& field, con
         auto val = value.get<uint64_t>();
         if(val != 0)
         {
-            total_size += 1 +
+            total_size += tag_size +
                     ::google::protobuf::internal::WireFormatLite::UInt64Size(val);
         }
     }
@@ -484,7 +452,7 @@ size_t ProtoMessageSerializer::calculateFieldSize(const MessageField& field, con
         auto val = value.get<double>();
         if(val != 0)
         {
-            total_size += 1 +
+            total_size += tag_size +
                     ::google::protobuf::internal::WireFormatLite::kDoubleSize;
         }
     }
@@ -494,7 +462,7 @@ size_t ProtoMessageSerializer::calculateFieldSize(const MessageField& field, con
         auto val = value.get<double>();
         if(val != 0)
         {
-            total_size += 1 +
+            total_size += tag_size +
                     ::google::protobuf::internal::WireFormatLite::kFloatSize;
         }
     }
@@ -504,7 +472,7 @@ size_t ProtoMessageSerializer::calculateFieldSize(const MessageField& field, con
         auto val = value.get<bool>();
         if(val)
         {
-            total_size += 1 +
+            total_size += tag_size +
                     ::google::protobuf::internal::WireFormatLite::kBoolSize;
         }
     }
@@ -514,7 +482,7 @@ size_t ProtoMessageSerializer::calculateFieldSize(const MessageField& field, con
         auto val = value.get<uint32_t>();
         if(val != 0)
         {
-            total_size += 1 +
+            total_size += tag_size +
                     ::google::protobuf::internal::WireFormatLite::kFixed32Size;
         }
     }
@@ -524,7 +492,7 @@ size_t ProtoMessageSerializer::calculateFieldSize(const MessageField& field, con
         auto val = value.get<int32_t>();
         if(val != 0)
         {
-            total_size += 1 +
+            total_size += tag_size +
                     ::google::protobuf::internal::WireFormatLite::kSFixed32Size;
         }
     }
@@ -534,7 +502,7 @@ size_t ProtoMessageSerializer::calculateFieldSize(const MessageField& field, con
         auto val = value.get<uint64_t>();
         if(val != 0)
         {
-            total_size += 1 +
+            total_size += tag_size +
                     ::google::protobuf::internal::WireFormatLite::kFixed64Size;
         }
     }
@@ -544,7 +512,7 @@ size_t ProtoMessageSerializer::calculateFieldSize(const MessageField& field, con
         auto val = value.get<int64_t>();
         if(val != 0)
         {
-            total_size += 1 +
+            total_size += tag_size +
                     ::google::protobuf::internal::WireFormatLite::kSFixed64Size;
         }
     }
