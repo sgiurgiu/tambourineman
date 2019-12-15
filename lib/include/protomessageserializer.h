@@ -33,6 +33,12 @@
 #include "json.hpp"
 #include "protofile.h"
 
+namespace google {
+namespace protobuf {
+namespace io {
+class CodedInputStream;
+}}}
+
 namespace tbm {
 
 class ProtoMessage;
@@ -61,7 +67,13 @@ public:
      * the protobuf serialized message. Can be binary or text.
      */
     std::string serializeMessage(const std::string& jsonMessage, bool binary = true) const;
-  
+
+    /**
+     * Receives a representation of the message and its data as protobuf format, and it returns
+     * a json string.
+     */
+    std::string readMessage(const std::string& protobufMessage) const;
+
 private:
     void validateJsonMessage(const nlohmann::json& msg) const;
     size_t calculateMessageSize(const nlohmann::json& msg) const;
@@ -69,6 +81,11 @@ private:
     nlohmann::json::const_iterator findJsonMember(const MessageField& field,const nlohmann::json& msg) const;
     uint8_t* writeMessageField(const MessageField& field,const nlohmann::json& value, uint8_t* target) const;
     uint8_t* writeMessage(const nlohmann::json& value, uint8_t* target) const;
+    const MessageField& getField(int fieldNumber) const;
+    nlohmann::json readMessage(google::protobuf::io::CodedInputStream* input) const;
+    void readField(google::protobuf::io::CodedInputStream* input,
+                   uint32_t tag,nlohmann::json& jsonResult) const;
+    nlohmann::json createDefaultInitializedJson() const;
 private:
     ProtoMessage* message;
 };

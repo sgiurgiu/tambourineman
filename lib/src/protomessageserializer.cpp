@@ -33,9 +33,19 @@
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/wire_format_lite_inl.h>
-
+#include <google/protobuf/repeated_field.h>
 #include "base64.h"
 
+/*namespace nlohmann
+{
+20244: friend bool operator==(const_reference lhs, const_reference rhs) noexcept
+
+        case value_t::number_float:
+                    return std::abs(lhs.m_value.number_float - rhs.m_value.number_float) <= 0.001f;
+                //    return lhs.m_value.number_float == rhs.m_value.number_float;
+
+}
+*/
 namespace tbm {
 
 ProtoMessageSerializer::ProtoMessageSerializer(ProtoMessage* message):message(message)
@@ -107,7 +117,7 @@ uint8_t* ProtoMessageSerializer::writeMessageField(const MessageField& field,con
         auto val = value.get<std::string>();
         if(val.size() > 0)
         {
-            std::string binaryVal = base64_encode(reinterpret_cast<const unsigned char*>(val.c_str()), val.length());
+            std::string binaryVal = base64_decode(val);
             if(binaryVal.length() > 0)
             {
             target = ::google::protobuf::internal::WireFormatLite::WriteBytesToArray(field.number(),binaryVal,target);
@@ -216,7 +226,7 @@ uint8_t* ProtoMessageSerializer::writeMessageField(const MessageField& field,con
     case MessageField::TYPE_DOUBLE:
     {
         auto val = value.get<double>();
-        if(val != 0)
+        if(val != 0.0)
         {
         target =
           ::google::protobuf::internal::WireFormatLite::WriteDoubleToArray(
@@ -227,7 +237,7 @@ uint8_t* ProtoMessageSerializer::writeMessageField(const MessageField& field,con
     case MessageField::TYPE_FLOAT:
     {
         auto val = value.get<float>();
-        if(val != 0)
+        if(val != 0.f)
         {
         target =
           ::google::protobuf::internal::WireFormatLite::WriteFloatToArray(
@@ -321,7 +331,7 @@ size_t ProtoMessageSerializer::calculateFieldSize(const MessageField& field, con
 {
     size_t total_size = 0;
     //this means that MessageField::FieldType MUST be the same thing as ::google::protobuf::internal::WireFormatLite::FieldType
-    size_t tag_size = ::google::protobuf::internal::WireFormatLite::TagSize(field.number(),
+    auto tag_size = ::google::protobuf::internal::WireFormatLite::TagSize(field.number(),
                           (::google::protobuf::internal::WireFormatLite::FieldType)field.type());
     switch(field.type())
     {
@@ -450,7 +460,7 @@ size_t ProtoMessageSerializer::calculateFieldSize(const MessageField& field, con
     case MessageField::TYPE_DOUBLE:
     {
         auto val = value.get<double>();
-        if(val != 0)
+        if(val != 0.)
         {
             total_size += tag_size +
                     ::google::protobuf::internal::WireFormatLite::kDoubleSize;
@@ -459,8 +469,8 @@ size_t ProtoMessageSerializer::calculateFieldSize(const MessageField& field, con
         break;
     case MessageField::TYPE_FLOAT:
     {
-        auto val = value.get<double>();
-        if(val != 0)
+        auto val = value.get<float>();
+        if(val != 0.f)
         {
             total_size += tag_size +
                     ::google::protobuf::internal::WireFormatLite::kFloatSize;
@@ -605,5 +615,311 @@ void ProtoMessageSerializer::validateJsonMessage(const nlohmann::json& msg) cons
     }
 }
 
+namespace {
+template<typename T>
+void assignJsonValue(const MessageField& field, const T& value, nlohmann::json& json)
+{
+    auto fieldName = field.name();
+    if(field.label() == MessageField::LABEL_REPEATED)
+    {
+        auto found = json.find(fieldName);
+        if(found == json.end())
+        {
+            json[fieldName] = nlohmann::json::array();
+        }
+        json[fieldName].push_back(value);
+    }
+    else
+    {
+        json[fieldName]=value;
+    }
+}
+template<typename Type, enum ::google::protobuf::internal::WireFormatLite::FieldType DeclaredType>
+void readPrimitive(const MessageField& field,google::protobuf::io::CodedInputStream* input,
+                   int wireType, nlohmann::json& json)
+{
+    if(field.label() == MessageField::LABEL_REPEATED &&
+       wireType == (int)::google::protobuf::internal::WireFormatLite::WireType::WIRETYPE_LENGTH_DELIMITED)
+    {
+        ::google::protobuf::RepeatedField<Type> values;
+        ::google::protobuf::internal::WireFormatLite::ReadPackedPrimitive<
+                           Type, DeclaredType>(input, &values);
+        for(const auto& val : values)
+        {
+            assignJsonValue(field,val,json);
+        }
+    }
+    else
+    {
+        Type val = 0;
+        ::google::protobuf::internal::WireFormatLite::ReadPrimitive<Type,
+                DeclaredType>(input,&val);
+        assignJsonValue(field,val,json);
+    }
+}
 
+template<>
+void readPrimitive<float,::google::protobuf::internal::WireFormatLite::TYPE_FLOAT>
+                (const MessageField& field,google::protobuf::io::CodedInputStream* input,
+                   int wireType, nlohmann::json& json)
+{
+    if(field.label() == MessageField::LABEL_REPEATED &&
+       wireType == (int)::google::protobuf::internal::WireFormatLite::WireType::WIRETYPE_LENGTH_DELIMITED)
+    {
+        ::google::protobuf::RepeatedField<float> values;
+        ::google::protobuf::internal::WireFormatLite::ReadPackedPrimitive<
+                           float, ::google::protobuf::internal::WireFormatLite::TYPE_FLOAT>(input, &values);
+        for(const auto& val : values)
+        {
+            assignJsonValue(field,val,json);
+        }
+    }
+    else
+    {
+        float val = 0;
+        ::google::protobuf::internal::WireFormatLite::ReadPrimitive<float,
+                ::google::protobuf::internal::WireFormatLite::TYPE_FLOAT>(input,&val);
+        assignJsonValue(field,(double)val,json);
+    }
+}
+
+}//namespace
+
+void ProtoMessageSerializer::readField(google::protobuf::io::CodedInputStream* input,
+               uint32_t tag,nlohmann::json& jsonResult)  const
+{
+    auto wireType = (int)::google::protobuf::internal::WireFormatLite::GetTagWireType(tag);
+    auto fieldNumber = ::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag);
+    auto field = getField(fieldNumber);
+    switch(field.type())
+    {
+    case MessageField::TYPE_MESSAGE:
+    {
+        auto msg_type = field.messageType();
+        ProtoMessageSerializer ser(msg_type.get());
+        int length;
+        if (!input->ReadVarintSizeAsInt(&length)) break;
+        std::pair<::google::protobuf::io::CodedInputStream::Limit, int> p =
+            input->IncrementRecursionDepthAndPushLimit(length);
+        auto val = ser.readMessage(input);
+        assignJsonValue(field,val,jsonResult);
+        input->DecrementRecursionDepthAndPopLimit(p.first);
+    }
+        break;
+    case MessageField::TYPE_STRING:
+    {
+        std::string val;
+        ::google::protobuf::internal::WireFormatLite::ReadString(input,&val);
+        auto fieldName = field.jsonName().empty() ? field.name() : field.jsonName();
+        assignJsonValue(field,val,jsonResult);
+    }
+        break;
+    case MessageField::TYPE_BYTES:
+    {
+        std::string binaryVal;
+        ::google::protobuf::internal::WireFormatLite::ReadBytes(input,&binaryVal);
+        auto fieldName = field.jsonName().empty() ? field.name() : field.jsonName();
+        auto val = base64_encode(reinterpret_cast<const unsigned char*>(binaryVal.c_str()), binaryVal.length());
+        assignJsonValue(field,val,jsonResult);
+    }
+        break;
+    case MessageField::TYPE_ENUM:
+    {
+        auto enumValues = field.enumType()->values();
+        if(field.label() == MessageField::LABEL_REPEATED &&
+           wireType == ::google::protobuf::internal::WireFormatLite::WireType::WIRETYPE_LENGTH_DELIMITED)
+        {
+            ::google::protobuf::uint32 length;
+            input->ReadVarint32(&length);
+            ::google::protobuf::io::CodedInputStream::Limit limit = input->PushLimit(static_cast<int>(length));
+            while (input->BytesUntilLimit() > 0)
+            {
+              int val;
+              ::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                     int, ::google::protobuf::internal::WireFormatLite::TYPE_ENUM>(
+                   input, &val);
+              if(val >= 0 && val < (int)enumValues.size())
+              {
+                assignJsonValue(field,enumValues[val],jsonResult);
+              }
+              else
+              {
+                  throw InvalidMessageException("Invalid enumeration value "+std::to_string(val));
+              }
+            }
+            input->PopLimit(limit);
+        }
+        else
+        {
+            int val = 0;
+            ::google::protobuf::internal::WireFormatLite::ReadPrimitive<int,
+                    ::google::protobuf::internal::WireFormatLite::TYPE_ENUM>(input,&val);
+            if(val >= 0 && val < (int)enumValues.size())
+            {
+                assignJsonValue(field,enumValues[val],jsonResult);
+            }
+            else
+            {
+                throw InvalidMessageException("Invalid enumeration value "+std::to_string(val));
+            }
+        }
+    }
+        break;
+    case MessageField::TYPE_INT32:
+    {
+        readPrimitive<int32_t,
+                ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(field,input,wireType,jsonResult);
+    }
+        break;
+    case MessageField::TYPE_SINT32:
+    {
+        readPrimitive<int32_t,
+                ::google::protobuf::internal::WireFormatLite::TYPE_SINT32>(field,input,wireType,jsonResult);
+    }
+        break;
+    case MessageField::TYPE_UINT32:
+    {
+        readPrimitive<uint32_t,
+                ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(field,input,wireType,jsonResult);
+    }
+        break;
+    case MessageField::TYPE_INT64:
+    {
+        readPrimitive<int64_t,
+                ::google::protobuf::internal::WireFormatLite::TYPE_INT64>(field,input,wireType,jsonResult);
+    }
+        break;
+    case MessageField::TYPE_SINT64:
+    {
+        readPrimitive<int64_t,
+                ::google::protobuf::internal::WireFormatLite::TYPE_SINT64>(field,input,wireType,jsonResult);
+    }
+        break;
+    case MessageField::TYPE_UINT64:
+    {
+        readPrimitive<uint64_t,
+                ::google::protobuf::internal::WireFormatLite::TYPE_UINT64>(field,input,wireType,jsonResult);
+    }
+        break;
+    case MessageField::TYPE_DOUBLE:
+    {
+        readPrimitive<double,
+                ::google::protobuf::internal::WireFormatLite::TYPE_DOUBLE>(field,input,wireType,jsonResult);
+    }
+        break;
+    case MessageField::TYPE_FLOAT:
+    {
+        readPrimitive<float,
+                ::google::protobuf::internal::WireFormatLite::TYPE_FLOAT>(field,input,wireType,jsonResult);
+    }
+        break;
+    case MessageField::TYPE_BOOL:
+    {
+        readPrimitive<bool,
+                ::google::protobuf::internal::WireFormatLite::TYPE_BOOL>(field,input,wireType,jsonResult);
+    }
+        break;
+    case MessageField::TYPE_FIXED32:
+    {
+        readPrimitive<uint32_t,
+                ::google::protobuf::internal::WireFormatLite::TYPE_FIXED32>(field,input,wireType,jsonResult);
+    }
+        break;
+    case MessageField::TYPE_SFIXED32:
+    {
+        readPrimitive<int32_t,
+                ::google::protobuf::internal::WireFormatLite::TYPE_SFIXED32>(field,input,wireType,jsonResult);
+    }
+        break;
+    case MessageField::TYPE_FIXED64:
+    {
+        readPrimitive<uint64_t,
+                ::google::protobuf::internal::WireFormatLite::TYPE_FIXED64>(field,input,wireType,jsonResult);
+    }
+        break;
+    case MessageField::TYPE_SFIXED64:
+    {
+        readPrimitive<int64_t,
+                ::google::protobuf::internal::WireFormatLite::TYPE_SFIXED64>(field,input,wireType,jsonResult);
+    }
+        break;
+
+    default:
+        throw NotImplementedFieldException("Field of type "+field.typeName()+" is not serializable yet");
+    }
+
+}
+nlohmann::json ProtoMessageSerializer::readMessage(google::protobuf::io::CodedInputStream* input) const
+{
+    nlohmann::json jsonResult = createDefaultInitializedJson();
+    while(true)
+    {
+        uint32_t tag = input->ReadTag();
+        if(tag == 0) break;
+        readField(input,tag,jsonResult);
+    }
+
+    return jsonResult;
+}
+nlohmann::json ProtoMessageSerializer::createDefaultInitializedJson() const
+{
+    nlohmann::json jsonResult;
+    auto& fields = message->fields();
+    for(const auto& field : fields)
+    {
+        switch(field.type())
+        {
+        case MessageField::TYPE_STRING:
+        case MessageField::TYPE_BYTES:
+            assignJsonValue(field,"",jsonResult);
+            break;
+        case MessageField::TYPE_ENUM:
+        {
+            auto enumValues = field.enumType()->values();
+            if(enumValues.size() > 0)
+            {
+                assignJsonValue(field,enumValues[0],jsonResult);
+            }
+        }
+            break;
+        case MessageField::TYPE_BOOL:
+            assignJsonValue(field,false,jsonResult);
+            break;
+        case MessageField::TYPE_INT32:
+        case MessageField::TYPE_SINT32:
+        case MessageField::TYPE_UINT32:
+        case MessageField::TYPE_INT64:
+        case MessageField::TYPE_SINT64:
+        case MessageField::TYPE_UINT64:
+        case MessageField::TYPE_DOUBLE:
+        case MessageField::TYPE_FLOAT:
+        case MessageField::TYPE_FIXED32:
+        case MessageField::TYPE_SFIXED32:
+        case MessageField::TYPE_FIXED64:
+        case MessageField::TYPE_SFIXED64:
+            assignJsonValue(field,0,jsonResult);
+            break;
+        default:
+            break;
+        }
+    }
+    return jsonResult;
+}
+std::string ProtoMessageSerializer::readMessage(const std::string& protobufMessage) const
+{
+    google::protobuf::io::CodedInputStream input(
+                reinterpret_cast<const uint8_t*>(protobufMessage.data()), protobufMessage.size());
+    auto jsonResult = readMessage(&input);
+    return jsonResult.dump();
+}
+const MessageField& ProtoMessageSerializer::getField(int fieldNumber) const
+{
+    auto& fields = message->fields();
+
+    for(const auto& field : fields)
+    {
+        if(field.number() == fieldNumber) return field;
+    }
+    throw InvalidMessageException("No field with number "+std::to_string(fieldNumber)+" in message "+message->name());
+}
 } //namespace tbm

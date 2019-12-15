@@ -55,6 +55,7 @@ message Person {
   sfixed32 new_sfixed32 = 15;
   sfixed64 new_sfixed64 = 16;
   bool new_bool = 17;
+
 }
 
 // Our address book file is just one of these.
