@@ -685,6 +685,30 @@ void readPrimitive<float,::google::protobuf::internal::WireFormatLite::TYPE_FLOA
 
 }//namespace
 
+template<typename Type, typename... Others>
+void ProtoMessageSerializer::readPrimitive2(const MessageField& field,google::protobuf::io::CodedInputStream* input,
+                   int wireType, nlohmann::json& json)
+{
+    if(field.label() == MessageField::LABEL_REPEATED &&
+       wireType == (int)::google::protobuf::internal::WireFormatLite::WireType::WIRETYPE_LENGTH_DELIMITED)
+    {
+        ::google::protobuf::RepeatedField<Type> values;
+        ::google::protobuf::internal::WireFormatLite::ReadPackedPrimitive<
+                           Type, Others...>(input, &values);
+        for(const auto& val : values)
+        {
+            assignJsonValue(field,val,json);
+        }
+    }
+    else
+    {
+        Type val = 0;
+        ::google::protobuf::internal::WireFormatLite::ReadPrimitive<Type,
+                Others...>(input,&val);
+        assignJsonValue(field,val,json);
+    }
+}
+
 void ProtoMessageSerializer::readField(google::protobuf::io::CodedInputStream* input,
                uint32_t tag,nlohmann::json& jsonResult)  const
 {

@@ -86,6 +86,10 @@ private:
     void readField(google::protobuf::io::CodedInputStream* input,
                    uint32_t tag,nlohmann::json& jsonResult) const;
     nlohmann::json createDefaultInitializedJson() const;
+    template<typename Type, typename... Others>
+    void readPrimitive2(const MessageField& field,google::protobuf::io::CodedInputStream* input,
+                       int wireType, nlohmann::json& json);
+
 private:
     ProtoMessage* message;
 };
