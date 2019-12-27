@@ -31,8 +31,8 @@
 
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/io/coded_stream.h>
-#include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/wire_format_lite_inl.h>
+#include <google/protobuf/wire_format.h>
 #include <google/protobuf/repeated_field.h>
 #include "base64.h"
 
@@ -65,6 +65,7 @@ std::string ProtoMessageSerializer::serializeMessage(const std::string& jsonMess
     std::string output;
     output.resize(totalSize,(char)0);
     writeMessage(msg,reinterpret_cast<uint8_t*>(&(output)[0]));
+
     return output;
 }
 
@@ -615,74 +616,49 @@ void ProtoMessageSerializer::validateJsonMessage(const nlohmann::json& msg) cons
     }
 }
 
-namespace {
-template<typename T>
-void assignJsonValue(const MessageField& field, const T& value, nlohmann::json& json)
+namespace
 {
-    auto fieldName = field.name();
-    if(field.label() == MessageField::LABEL_REPEATED)
+    template<typename T>
+    void assignJsonValue(const MessageField& field, const T& value, nlohmann::json& json)
     {
-        auto found = json.find(fieldName);
-        if(found == json.end())
+        auto fieldName = field.name();
+        if(field.label() == MessageField::LABEL_REPEATED)
         {
-            json[fieldName] = nlohmann::json::array();
+            auto found = json.find(fieldName);
+            if(found == json.end())
+            {
+                json[fieldName] = nlohmann::json::array();
+            }
+            json[fieldName].push_back(value);
         }
-        json[fieldName].push_back(value);
-    }
-    else
-    {
-        json[fieldName]=value;
-    }
-}
-template<typename Type, enum ::google::protobuf::internal::WireFormatLite::FieldType DeclaredType>
-void readPrimitive(const MessageField& field,google::protobuf::io::CodedInputStream* input,
-                   int wireType, nlohmann::json& json)
-{
-    if(field.label() == MessageField::LABEL_REPEATED &&
-       wireType == (int)::google::protobuf::internal::WireFormatLite::WireType::WIRETYPE_LENGTH_DELIMITED)
-    {
-        ::google::protobuf::RepeatedField<Type> values;
-        ::google::protobuf::internal::WireFormatLite::ReadPackedPrimitive<
-                           Type, DeclaredType>(input, &values);
-        for(const auto& val : values)
+        else
         {
+            json[fieldName]=value;
+        }
+    }
+    template<typename Type, enum ::google::protobuf::internal::WireFormatLite::FieldType DeclaredType>
+    void readPrimitive(const MessageField& field,google::protobuf::io::CodedInputStream* input,
+                       int wireType, nlohmann::json& json)
+    {
+        if(field.label() == MessageField::LABEL_REPEATED &&
+           wireType == (int)::google::protobuf::internal::WireFormatLite::WireType::WIRETYPE_LENGTH_DELIMITED)
+        {
+            ::google::protobuf::RepeatedField<Type> values;
+            ::google::protobuf::internal::WireFormatLite::ReadPackedPrimitive<
+                               Type, DeclaredType>(input, &values);
+            for(const auto& val : values)
+            {
+                assignJsonValue(field,val,json);
+            }
+        }
+        else
+        {
+            Type val = 0;
+            ::google::protobuf::internal::WireFormatLite::ReadPrimitive<Type,
+                    DeclaredType>(input,&val);
             assignJsonValue(field,val,json);
         }
     }
-    else
-    {
-        Type val = 0;
-        ::google::protobuf::internal::WireFormatLite::ReadPrimitive<Type,
-                DeclaredType>(input,&val);
-        assignJsonValue(field,val,json);
-    }
-}
-
-template<>
-void readPrimitive<float,::google::protobuf::internal::WireFormatLite::TYPE_FLOAT>
-                (const MessageField& field,google::protobuf::io::CodedInputStream* input,
-                   int wireType, nlohmann::json& json)
-{
-    if(field.label() == MessageField::LABEL_REPEATED &&
-       wireType == (int)::google::protobuf::internal::WireFormatLite::WireType::WIRETYPE_LENGTH_DELIMITED)
-    {
-        ::google::protobuf::RepeatedField<float> values;
-        ::google::protobuf::internal::WireFormatLite::ReadPackedPrimitive<
-                           float, ::google::protobuf::internal::WireFormatLite::TYPE_FLOAT>(input, &values);
-        for(const auto& val : values)
-        {
-            assignJsonValue(field,val,json);
-        }
-    }
-    else
-    {
-        float val = 0;
-        ::google::protobuf::internal::WireFormatLite::ReadPrimitive<float,
-                ::google::protobuf::internal::WireFormatLite::TYPE_FLOAT>(input,&val);
-        assignJsonValue(field,(double)val,json);
-    }
-}
-
 }//namespace
 
 template<typename Type, typename... Others>

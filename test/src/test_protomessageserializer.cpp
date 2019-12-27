@@ -75,7 +75,7 @@ std::string personToString()
     person_message.set_new_double(0.3);
     person_message.set_new_fixed32(12);
     person_message.set_new_fixed64(13);
-    person_message.set_new_float(1.3);
+    person_message.set_new_float(1.3f);
     person_message.set_new_int64(12);
     person_message.set_new_sfixed32(-12);
     person_message.set_new_sfixed64(-2);

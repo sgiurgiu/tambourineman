@@ -4,8 +4,15 @@ project (tbm
      DESCRIPTION "LibTambourineMan - Your API tester"
     )
 
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+set(Boost_USE_STATIC_LIBS        ON)
+set(Boost_USE_MULTITHREADED      ON)
+
 find_package(Protobuf REQUIRED)
 find_package (Threads REQUIRED)
+find_package(Boost 1.65 REQUIRED system)
+find_package(OpenSSL REQUIRED)
+find_package(ZLIB REQUIRED)
 
 file(GLOB_RECURSE LIB_HEADERS *.h *.hpp )
 
@@ -13,15 +20,18 @@ set(LIB_NAME tbm)
 set (TBM_SRCS src/protofileloader.cpp
         src/protofile.cpp
         src/protomessageserializer.cpp
-        src/base64.cpp)
+        src/base64.cpp
+        src/protomessagehttpclient.cpp)
 
-include_directories("${CMAKE_SOURCE_DIR}/lib/include" ${Protobuf_INCLUDE_DIRS}
+include_directories(${Protobuf_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS}
     ${EASYLOGGING_INCLUDE})
 
 add_library(${LIB_NAME} SHARED ${TBM_SRCS} ${EASYLOGGING_SRCS})
 add_library(TBM::${LIB_NAME} ALIAS ${LIB_NAME})
 
 target_compile_definitions(${LIB_NAME} PUBLIC "LIBTBM_DEBUG=$<CONFIG:Debug>")
+set (LIBTM_NAME_VERSION "${PROJECT_NAME} - ${PROJECT_VERSION}")
+target_compile_definitions(${LIB_NAME} PUBLIC "LIBTBM_NAME_VERSION_STRING=\"${LIBTM_NAME_VERSION}\"")
 
 target_include_directories(${LIB_NAME}
     PUBLIC
@@ -34,6 +44,8 @@ target_include_directories(${LIB_NAME}
 add_custom_target(LibHeaders SOURCES ${LIB_HEADERS})
 
 target_link_libraries(${LIB_NAME} PUBLIC ${Protobuf_LIBRARIES})
+target_link_libraries(${LIB_NAME} PRIVATE ${Boost_LIBRARIES}
+    ${OPENSSL_LIBRARIES} ${ZLIB_LIBRARIES})
 target_link_libraries(${LIB_NAME} PRIVATE Threads::Threads)
 
 ## this was copied and mangled until it became a spagetti mess

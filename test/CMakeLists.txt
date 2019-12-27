@@ -13,6 +13,8 @@ if(result)
   message(FATAL_ERROR "Build step for googletest failed: ${result}")
 endif()
 
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
 # Add googletest directly to our build. This defines
 # the gtest and gtest_main targets.
 add_subdirectory(${CMAKE_BINARY_DIR}/googletest-src
@@ -20,22 +22,22 @@ add_subdirectory(${CMAKE_BINARY_DIR}/googletest-src
                  EXCLUDE_FROM_ALL)
 
                  
-#find_package(Protobuf REQUIRED)
+find_package(Protobuf REQUIRED)
 find_package(Threads REQUIRED)
                  
 
 
 set(TBM_TEST_SRCS src/test_protofileloader.cpp
                 src/test_protomessageserializer.cpp
+                src/test_protomessagehttpclient.cpp
+                src/httpserver.cpp
                 )
-                
-set(PROTO_MSGS_SRCS proto_cpp/addressbook.pb.cc   
 
-    )
+protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS  ${CMAKE_CURRENT_SOURCE_DIR}/data/addressbook.proto)
 
-include_directories(proto_cpp/ ${Protobuf_INCLUDE_DIRS})
+include_directories(proto_cpp/ ${Protobuf_INCLUDE_DIRS} ${EASYLOGGING_INCLUDE})
 
-add_executable(tbm_test ${TBM_TEST_SRCS} ${PROTO_MSGS_SRCS})
+add_executable(tbm_test ${TBM_TEST_SRCS} ${PROTO_SRCS} ${PROTO_HDRS} ${EASYLOGGING_SRCS})
 
 #target_compile_features(json_utils_test PRIVATE cxx_auto_type)
 target_link_libraries(tbm_test PUBLIC Threads::Threads )

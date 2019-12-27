@@ -20242,7 +20242,7 @@ class basic_json
                     return lhs.m_value.number_unsigned == rhs.m_value.number_unsigned;
 
                 case value_t::number_float:
-                    return std::abs(lhs.m_value.number_float - rhs.m_value.number_float) <= 0.001f;
+                    return std::abs(lhs.m_value.number_float - rhs.m_value.number_float) <= 0.00001f;
                 //    return lhs.m_value.number_float == rhs.m_value.number_float;
 
                 default:
