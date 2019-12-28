@@ -24,7 +24,7 @@ ProtoMessageHttpClient::ProtoMessageHttpClient(const std::string& host, int port
 std::string ProtoMessageHttpClient::performGet(const std::string& path)
 {
     auto localPath = path;
-    if(path == "") {
+    if(localPath == "") {
         localPath = defaultPath;
     }
 

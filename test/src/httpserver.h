@@ -59,7 +59,9 @@ private:
     std::thread serverThread;
     std::unique_ptr<boost::asio::io_context> ioc;
     std::condition_variable listening_condition;
+    std::condition_variable starting_condition;
     std::mutex listening_mutex;
+    std::mutex starting_mutex;
     PostFunction postFunction;
     GetFunction getFunction;
 };

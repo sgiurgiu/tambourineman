@@ -203,6 +203,7 @@ void HttpServer::handle_accept(boost::asio::ip::tcp::socket* socket, const boost
 void HttpServer::start()
 {
     serverThread = std::thread([this](){
+        done = false;
         ioc = std::make_unique<boost::asio::io_context>(1);
         auto const address = boost::asio::ip::make_address("127.0.0.1");
         boost::asio::ip::tcp::acceptor acceptor(*ioc);
@@ -217,13 +218,17 @@ void HttpServer::start()
             {
                 this->port = dis(gen);
                 boost::asio::ip::tcp::endpoint endpoint(address, this->port);
-                acceptor.open(endpoint.protocol());
+                if(!acceptor.is_open())
+                {
+                    acceptor.open(endpoint.protocol());
+                }
                 acceptor.bind(endpoint);
                 acceptor.listen();
+                break;
             }
             catch (const boost::system::system_error& er)
             {
-                LOG(WARNING) << "Cannot bind to port: "<< this->port <<". Retrying.\n";
+                LOG(WARNING) << "Cannot bind to port: "<< this->port<<"."<<er.what() <<". Retrying.\n";
                 this->port = -1;
             }
         }
@@ -245,12 +250,22 @@ void HttpServer::start()
                 this->handle_accept(&socket,err);
             });
 
-            done = false;
+            {
+                std::lock_guard<std::mutex> lock(starting_mutex);
+                starting_condition.notify_one();
+            }
+
+
             std::unique_lock<std::mutex> lock(listening_mutex);
             listening_condition.wait(lock, [&](){return (bool)done;});
-
         }
     });
+
+    {
+        std::unique_lock<std::mutex> lock(starting_mutex);
+        starting_condition.wait(lock);
+    }
+
 }
 void HttpServer::stop()
 {
