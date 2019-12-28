@@ -255,7 +255,7 @@ void HttpServer::start()
                 starting_condition.notify_one();
             }
 
-
+            ioc->run();
             std::unique_lock<std::mutex> lock(listening_mutex);
             listening_condition.wait(lock, [&](){return (bool)done;});
         }
@@ -279,6 +279,7 @@ void HttpServer::stop()
     {
         serverThread.join();
     }
+    ioc->stop();
 }
 
 }

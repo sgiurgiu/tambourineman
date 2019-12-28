@@ -69,7 +69,7 @@ std::string ProtoMessageHttpClient::performGet(const std::string& path)
     http::read(socket, buffer, res);
 
     // Write the message to standard out
-    std::cout << res << std::endl;
+    //std::cout << res << std::endl;
 
     // Gracefully close the socket
     socket.shutdown(tcp::socket::shutdown_both, ec);
@@ -78,10 +78,11 @@ std::string ProtoMessageHttpClient::performGet(const std::string& path)
     // so don't bother reporting it.
     //
     if(ec && ec != boost::system::errc::not_connected)
+    {
        throw boost::system::system_error{ec};
+    }
 
-
-    return "";
+    return  boost::beast::buffers_to_string(res.body().data());
 }
 
 }//namespace tbm

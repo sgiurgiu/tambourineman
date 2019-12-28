@@ -4,6 +4,8 @@
 
 #include "httpserver.h"
 
+#include <easylogging++.h>
+
 using namespace tbm;
 
 
@@ -20,7 +22,8 @@ TEST(ProtoMessageHttpClient, getRequest)
 
     HttpServer server([](const std::string& query,
                       const HeadersMap& headers) -> std::string {
-        return "";
+        LOG(WARNING) << "got called with query string "<<query <<"\n" ;
+        return "tutorial";
     });
 
     server.start();
