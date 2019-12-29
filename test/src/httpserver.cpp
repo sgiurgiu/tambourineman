@@ -22,11 +22,11 @@ HttpServer::HttpServer(const GetFunction& func):HttpServer(func,PostFunction())
 HttpServer::HttpServer(const PostFunction& func):HttpServer(GetFunction(),func)
 {}
 HttpServer::HttpServer(const GetFunction& gfunc,const PostFunction& pfunc):
-    done(true),postFunction(pfunc),getFunction(gfunc)
+    done(true),started(false),postFunction(pfunc),getFunction(gfunc),
+    imp(std::make_unique<HttpServer::InternalImplementation>())
 {}
-HttpServer::HttpServer():done(true)
+HttpServer::HttpServer():done(true),started(false),imp(std::make_unique<HttpServer::InternalImplementation>())
 {}
-
 HttpServer::~HttpServer()
 {
     stop();
@@ -35,6 +35,12 @@ int HttpServer::listeningPort() const
 {
     return port;
 }
+
+struct HttpServer::InternalImplementation
+{
+    std::unique_ptr<boost::asio::io_context> ioc;
+    std::unique_ptr<boost::asio::ip::tcp::acceptor> acceptor;
+};
 
 template<typename Request, typename Send>
 void HttpServer::handle_request(Request&& req,Send&& send)
@@ -152,11 +158,12 @@ void HttpServer::SendStreamContainer<Stream,Error>::operator()(Message&& msg) co
 }
 
 template<>
-void HttpServer::handle_accept(boost::asio::ip::tcp::socket* socket, const boost::system::error_code& err)
+void HttpServer::handle_accept(std::shared_ptr<boost::asio::ip::tcp::socket> socket,
+                               const boost::system::error_code& err)
  {
     if ( err)
     {
-        LOG(ERROR) << "Error handling accept request "<<err.message() <<"\n" ;
+        LOG(ERROR) << "Error handling accept request "<<err.value()<<":"<<err.message() <<"\n" ;
         return;
     }
     bool close = false;
@@ -176,7 +183,7 @@ void HttpServer::handle_accept(boost::asio::ip::tcp::socket* socket, const boost
        }
        if(ec)
        {
-           LOG(ERROR) << "Error reading from request "<<err.message() <<"\n" ;
+           LOG(ERROR) << "Error reading from request "<<ec.value()<<":"<<ec.message() <<"\n" ;
            return;
        }
        // Send the response
@@ -184,7 +191,7 @@ void HttpServer::handle_accept(boost::asio::ip::tcp::socket* socket, const boost
 
        if(ec)
        {
-           LOG(ERROR) << "Error writing to socket "<<err.message() <<"\n" ;
+           LOG(ERROR) << "Error writing to socket "<<ec.message() <<"\n" ;
            return;
        }
        if(close)
@@ -197,16 +204,27 @@ void HttpServer::handle_accept(boost::asio::ip::tcp::socket* socket, const boost
 
     // Send a TCP shutdown
     socket->shutdown(boost::asio::ip::tcp::socket::shutdown_send, ec);
+    socket->close(ec);
+    start_accept();
+}
 
+void HttpServer::start_accept()
+{
+    std::shared_ptr<boost::asio::ip::tcp::socket> socket = std::make_shared<boost::asio::ip::tcp::socket>(*(imp->ioc));
+    imp->acceptor->async_accept(*socket,[socket,this](const boost::system::error_code& ec){
+        handle_accept(std::move(socket),ec);
+    });
+    LOG(INFO) << "after acceptor.accept";
 }
 
 void HttpServer::start()
 {
-    serverThread = std::thread([this](){
+    started = false;    
+    serverThread = std::thread([this]() {
         done = false;
-        ioc = std::make_unique<boost::asio::io_context>(1);
+        imp->ioc = std::make_unique<boost::asio::io_context>(1);
         auto const address = boost::asio::ip::make_address("127.0.0.1");
-        boost::asio::ip::tcp::acceptor acceptor(*ioc);
+        imp->acceptor = std::make_unique<boost::asio::ip::tcp::acceptor>(*(imp->ioc));        
 
         std::random_device rd;  //Will be used to obtain a seed for the random number engine
         std::mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
@@ -218,12 +236,14 @@ void HttpServer::start()
             {
                 this->port = dis(gen);
                 boost::asio::ip::tcp::endpoint endpoint(address, this->port);
-                if(!acceptor.is_open())
+                if(!imp->acceptor->is_open())
                 {
-                    acceptor.open(endpoint.protocol());
+                    imp->acceptor->open(endpoint.protocol());
+                 //   imp->acceptor->set_option(boost::asio::socket_base::reuse_address(true));
+                 //   imp->acceptor->non_blocking(true);
                 }
-                acceptor.bind(endpoint);
-                acceptor.listen();
+                imp->acceptor->bind(endpoint);
+                imp->acceptor->listen();
                 break;
             }
             catch (const boost::system::system_error& er)
@@ -243,27 +263,22 @@ void HttpServer::start()
             LOG(INFO) << "Starting server on port "<<this->port<<"\n";
         }
 
+
+        start_accept();
+
+
         {
-            using namespace std::placeholders;
-            boost::asio::ip::tcp::socket socket{*ioc};
-            acceptor.async_accept(socket,[&socket,this](const boost::system::error_code& err){
-                this->handle_accept(&socket,err);
-            });
-
-            {
-                std::lock_guard<std::mutex> lock(starting_mutex);
-                starting_condition.notify_one();
-            }
-
-            ioc->run();
-            std::unique_lock<std::mutex> lock(listening_mutex);
-            listening_condition.wait(lock, [&](){return (bool)done;});
+            started = true;
+            std::lock_guard<std::mutex> lock(starting_mutex);
+            starting_condition.notify_one();
         }
+
+        imp->ioc->run();
     });
 
     {
         std::unique_lock<std::mutex> lock(starting_mutex);
-        starting_condition.wait(lock);
+        starting_condition.wait(lock,[&](){return (bool)started;});
     }
 
 }
@@ -271,15 +286,17 @@ void HttpServer::stop()
 {
     if(done) return;
     done = true;
+   // LOG(INFO) << "destruction";
     {
-        std::lock_guard<std::mutex> lock(listening_mutex);
-        listening_condition.notify_one();
+        //std::lock_guard<std::mutex> lock(listening_mutex);
+        //listening_condition.notify_one();
     }
+    imp->acceptor->close();
+    imp->ioc->stop();
     if(serverThread.joinable())
     {
         serverThread.join();
-    }
-    ioc->stop();
+    }    
 }
 
 }

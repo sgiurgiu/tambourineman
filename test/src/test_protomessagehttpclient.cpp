@@ -28,15 +28,13 @@ TEST(ProtoMessageHttpClient, getRequest)
 
     server.start();
 
-   // std::this_thread::sleep_for(std::chrono::seconds(30));
     auto port = server.listeningPort();
 
     ProtoMessageHttpClient client("127.0.0.1",port,"/");
     auto result = client.performGet();
-    //std::this_thread::sleep_for(std::chrono::seconds(30));
-
     ASSERT_EQ(result,"tutorial");
 
-
+    result = client.performGet();
+    ASSERT_EQ(result,"tutorial");
 }
 

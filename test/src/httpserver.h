@@ -9,13 +9,6 @@
 #include <map>
 #include <functional>
 
-
-namespace boost {
-namespace asio {
-    class io_context;
-}
-}
-
 namespace tbm {
 
 using HeadersMap = std::multimap<std::string,std::string>;
@@ -37,7 +30,7 @@ public:
     int listeningPort() const;
 private:
     template<typename Socket,typename Error>
-    void handle_accept(Socket* socket, const Error& err);
+    void handle_accept(Socket socket, const Error& err);
     template<typename Request, typename Send>
     void handle_request(Request&& req,Send&& send);
 
@@ -53,17 +46,20 @@ private:
         void operator()(Message&& msg) const;
     };
 
+    void start_accept();
 private:
     std::atomic_bool done;
+    std::atomic_bool started;
     int port;
     std::thread serverThread;
-    std::unique_ptr<boost::asio::io_context> ioc;
     std::condition_variable listening_condition;
     std::condition_variable starting_condition;
     std::mutex listening_mutex;
     std::mutex starting_mutex;
     PostFunction postFunction;
     GetFunction getFunction;
+    struct InternalImplementation;
+    std::unique_ptr<InternalImplementation> imp;
 };
 
 } //namespace
