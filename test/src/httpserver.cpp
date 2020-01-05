@@ -17,16 +17,26 @@ namespace http = boost::beast::http;    // from <boost/beast/http.hpp>
 
 
 namespace tbm {
+struct HttpServer::InternalImplementation
+{
+    std::unique_ptr<boost::asio::io_context> ioc;
+    std::unique_ptr<boost::asio::ip::tcp::acceptor> acceptor;
+};
+
 HttpServer::HttpServer(const GetFunction& func):HttpServer(func,PostFunction())
 {}
 HttpServer::HttpServer(const PostFunction& func):HttpServer(GetFunction(),func)
 {}
 HttpServer::HttpServer(const GetFunction& gfunc,const PostFunction& pfunc):
-    done(true),started(false),postFunction(pfunc),getFunction(gfunc),
+    done(false),started(false),postFunction(pfunc),getFunction(gfunc),
     imp(std::make_unique<HttpServer::InternalImplementation>())
-{}
-HttpServer::HttpServer():done(true),started(false),imp(std::make_unique<HttpServer::InternalImplementation>())
-{}
+{
+    imp->ioc = std::make_unique<boost::asio::io_context>(1);
+}
+HttpServer::HttpServer():done(false),started(false),imp(std::make_unique<HttpServer::InternalImplementation>())
+{
+    imp->ioc = std::make_unique<boost::asio::io_context>(1);
+}
 HttpServer::~HttpServer()
 {
     stop();
@@ -35,12 +45,6 @@ int HttpServer::listeningPort() const
 {
     return port;
 }
-
-struct HttpServer::InternalImplementation
-{
-    std::unique_ptr<boost::asio::io_context> ioc;
-    std::unique_ptr<boost::asio::ip::tcp::acceptor> acceptor;
-};
 
 template<typename Request, typename Send>
 void HttpServer::handle_request(Request&& req,Send&& send)
@@ -219,41 +223,10 @@ void HttpServer::start_accept()
 
 void HttpServer::start()
 {
-    started = false;    
+    started = false;
+
     serverThread = std::thread([this]() {
-        done = false;
-        imp->ioc = std::make_unique<boost::asio::io_context>(1);
-        auto const address = boost::asio::ip::make_address("127.0.0.1");
-        imp->acceptor = std::make_unique<boost::asio::ip::tcp::acceptor>(*(imp->ioc));        
-
-        std::random_device rd;  //Will be used to obtain a seed for the random number engine
-        std::mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
-        std::uniform_int_distribution<> dis(25600, 59000);//try ports in that range
-
-        for(int i=0;i<100;i++)
-        {
-            try
-            {
-                this->port = dis(gen);
-                boost::asio::ip::tcp::endpoint endpoint(address, this->port);
-                if(!imp->acceptor->is_open())
-                {
-                    imp->acceptor->open(endpoint.protocol());
-                 //   imp->acceptor->set_option(boost::asio::socket_base::reuse_address(true));
-                 //   imp->acceptor->non_blocking(true);
-                }
-                imp->acceptor->bind(endpoint);
-                imp->acceptor->listen();
-                break;
-            }
-            catch (const boost::system::system_error& er)
-            {
-                LOG(WARNING) << "Cannot bind to port: "<< this->port<<"."<<er.what() <<". Retrying.\n";
-                this->port = -1;
-            }
-        }
-
-        if(this->port == -1)
+        if(!make_and_bind_acceptor() || this->port == -1)
         {
             LOG(ERROR) << "Could not find suitable port to bind to. Giving up starting the server.\n";
             return;
@@ -263,9 +236,7 @@ void HttpServer::start()
             LOG(INFO) << "Starting server on port "<<this->port<<"\n";
         }
 
-
         start_accept();
-
 
         {
             started = true;
@@ -280,18 +251,53 @@ void HttpServer::start()
         std::unique_lock<std::mutex> lock(starting_mutex);
         starting_condition.wait(lock,[&](){return (bool)started;});
     }
+}
 
+bool HttpServer::make_and_bind_acceptor()
+{
+    auto const address = boost::asio::ip::make_address("127.0.0.1");
+    imp->acceptor = std::make_unique<boost::asio::ip::tcp::acceptor>(*(imp->ioc));
+
+    std::random_device rd;  //Will be used to obtain a seed for the random number engine
+    std::mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
+    std::uniform_int_distribution<> dis(25600, 59000);//try ports in that range
+
+    bool found_port = false;
+    for(int i=0;i<100;i++)
+    {
+        try
+        {
+            this->port = dis(gen);
+            boost::asio::ip::tcp::endpoint endpoint(address, this->port);
+            if(!imp->acceptor->is_open())
+            {
+                imp->acceptor->open(endpoint.protocol());
+                imp->acceptor->set_option(boost::asio::socket_base::reuse_address(true));
+             //   imp->acceptor->non_blocking(true);
+            }
+            imp->acceptor->bind(endpoint);
+            imp->acceptor->listen();
+            found_port = true;
+            break;
+        }
+        catch (const boost::system::system_error& er)
+        {
+            LOG(WARNING) << "Cannot bind to port: "<< this->port<<"."<<er.what() <<". Retrying.\n";
+            this->port = -1;
+            found_port = false;
+        }
+    }
+
+    return found_port;
 }
 void HttpServer::stop()
 {
     if(done) return;
     done = true;
-   // LOG(INFO) << "destruction";
+    if(imp->acceptor)
     {
-        //std::lock_guard<std::mutex> lock(listening_mutex);
-        //listening_condition.notify_one();
+        imp->acceptor->close();
     }
-    imp->acceptor->close();
     imp->ioc->stop();
     if(serverThread.joinable())
     {

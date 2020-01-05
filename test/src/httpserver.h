@@ -47,6 +47,7 @@ private:
     };
 
     void start_accept();
+    bool make_and_bind_acceptor();
 private:
     std::atomic_bool done;
     std::atomic_bool started;
