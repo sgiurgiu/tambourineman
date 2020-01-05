@@ -165,6 +165,11 @@ template<>
 void HttpServer::handle_accept(std::shared_ptr<boost::asio::ip::tcp::socket> socket,
                                const boost::system::error_code& err)
  {
+    if(err == boost::asio::error::operation_aborted && done)
+    {
+        LOG(INFO)<<"We're going away";
+        return;
+    }
     if ( err)
     {
         LOG(ERROR) << "Error handling accept request "<<err.value()<<":"<<err.message() <<"\n" ;
@@ -176,6 +181,7 @@ void HttpServer::handle_accept(std::shared_ptr<boost::asio::ip::tcp::socket> soc
     // This buffer is required to persist across reads
     boost::beast::flat_buffer buffer;
     SendStreamContainer<boost::asio::ip::tcp::socket,boost::system::error_code> lambda{*socket, close, ec};
+
     for(;;)
     {
        // Read a request
@@ -216,7 +222,7 @@ void HttpServer::start_accept()
 {
     std::shared_ptr<boost::asio::ip::tcp::socket> socket = std::make_shared<boost::asio::ip::tcp::socket>(*(imp->ioc));
     imp->acceptor->async_accept(*socket,[socket,this](const boost::system::error_code& ec){
-        handle_accept(std::move(socket),ec);
+        handle_accept(socket,ec);
     });
     LOG(INFO) << "after acceptor.accept";
 }

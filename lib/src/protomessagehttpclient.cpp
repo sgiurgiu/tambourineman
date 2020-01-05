@@ -21,7 +21,10 @@ ProtoMessageHttpClient::ProtoMessageHttpClient(const std::string& host, int port
     host(host),port(port),defaultPath(path),version(version)
 {
 }
-std::string ProtoMessageHttpClient::performGet(const std::string& path)
+
+template<>
+std::string ProtoMessageHttpClient::perform(const std::string& body,boost::beast::http::verb method,
+                                            const std::string& path)
 {
     auto localPath = path;
     if(localPath == "") {
@@ -52,9 +55,16 @@ std::string ProtoMessageHttpClient::performGet(const std::string& path)
     }
 
     // Set up an HTTP GET request message
-    http::request<http::string_body> req{http::verb::get, localPath, version};
+    http::request<http::string_body> req{method, localPath, version};
     req.set(http::field::host, host);
     req.set(http::field::user_agent, LIBTBM_NAME_VERSION_STRING);
+
+    if(!body.empty())
+    {
+        req.set(http::field::content_type, "text/plain");
+        req.body() = body;
+        req.set(http::field::content_length,body.size());
+    }
 
     // Send the HTTP request to the remote host
     http::write(socket, req);
@@ -83,6 +93,15 @@ std::string ProtoMessageHttpClient::performGet(const std::string& path)
     }
 
     return  boost::beast::buffers_to_string(res.body().data());
+}
+std::string ProtoMessageHttpClient::performGet(const std::string& path)
+{
+    return perform("",boost::beast::http::verb::get,path);
+}
+
+std::string ProtoMessageHttpClient::performPost(const std::string& body,const std::string& path)
+{
+    return perform(body,boost::beast::http::verb::post,path);
 }
 
 }//namespace tbm

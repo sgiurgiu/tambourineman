@@ -31,6 +31,7 @@ set(TBM_TEST_SRCS src/test_protofileloader.cpp
                 src/test_protomessageserializer.cpp
                 src/test_protomessagehttpclient.cpp
                 src/httpserver.cpp
+                src/prototestutils.cpp
                 )
 
 protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS  ${CMAKE_CURRENT_SOURCE_DIR}/data/addressbook.proto)
