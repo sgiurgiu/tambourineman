@@ -34,8 +34,8 @@
 #include <google/protobuf/wire_format_lite_inl.h>
 #include <google/protobuf/wire_format.h>
 #include <google/protobuf/repeated_field.h>
-#include "base64.h"
 
+#include <boost/beast/core/detail/base64.hpp>
 /*namespace nlohmann
 {
 20244: friend bool operator==(const_reference lhs, const_reference rhs) noexcept
@@ -91,6 +91,20 @@ uint8_t* ProtoMessageSerializer::writeMessage(const nlohmann::json& value, uint8
         }
     }
     return target;
+}
+std::string ProtoMessageSerializer::base64_decode(const std::string& source) const
+{
+    auto decoded_size = boost::beast::detail::base64::decoded_size(source.size());
+    char decoded_target[decoded_size];
+    auto decoded_result = boost::beast::detail::base64::decode(decoded_target,source.c_str(),source.size());
+    return std::string(decoded_target,decoded_result.first);
+}
+std::string ProtoMessageSerializer::base64_encode(const std::string& source) const
+{
+    auto encoded_size = boost::beast::detail::base64::encoded_size(source.size());
+    char encoded_target[encoded_size];
+    encoded_size = boost::beast::detail::base64::encode(encoded_target,source.c_str(),source.size());
+    return std::string(encoded_target,encoded_size);
 }
 
 uint8_t* ProtoMessageSerializer::writeMessageField(const MessageField& field,const nlohmann::json& value, uint8_t* target) const
@@ -359,7 +373,7 @@ size_t ProtoMessageSerializer::calculateFieldSize(const MessageField& field, con
         auto val = value.get<std::string>();
         if(val.size() > 0)
         {
-            std::string binaryVal = base64_encode(reinterpret_cast<const unsigned char*>(val.c_str()), val.length());
+            std::string binaryVal = base64_encode(val);
             if(binaryVal.length() > 0)
             {
             total_size += tag_size +
@@ -719,7 +733,7 @@ void ProtoMessageSerializer::readField(google::protobuf::io::CodedInputStream* i
         std::string binaryVal;
         ::google::protobuf::internal::WireFormatLite::ReadBytes(input,&binaryVal);
         auto fieldName = field.jsonName().empty() ? field.name() : field.jsonName();
-        auto val = base64_encode(reinterpret_cast<const unsigned char*>(binaryVal.c_str()), binaryVal.length());
+        auto val = base64_encode(binaryVal);
         assignJsonValue(field,val,jsonResult);
     }
         break;

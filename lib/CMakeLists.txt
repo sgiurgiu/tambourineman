@@ -20,7 +20,6 @@ set(LIB_NAME tbm)
 set (TBM_SRCS src/protofileloader.cpp
         src/protofile.cpp
         src/protomessageserializer.cpp
-        src/base64.cpp
         src/protomessagehttpclient.cpp)
 
 include_directories(${Protobuf_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS}

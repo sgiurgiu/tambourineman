@@ -63,26 +63,6 @@ ProtoFile ProtoFileLoader::loadFile(const std::string& file,std::vector<std::str
     {
         throw ProtoFileLoaderException(errorCollector->errors,errorCollector->warnings);
     }
-    /*for(int i=0;i<descriptor->message_type_count();i++)
-    {
-        auto message = descriptor->message_type(i);
-        std::cout << "message:"<<message->name() <<std::endl;
-        for(int j=0;j<message->field_count();j++)
-        {
-            auto field  = message->field(j);
-            std::cout << "field:"<<field->name() <<", type:"<<field->type()<<", label:"<<field->label()<<std::endl;
-        }
-    }
-    for(int i=0;i<descriptor->service_count();i++)
-    {
-        auto message = descriptor->service(i);
-        std::cout << "service:"<<message->name() <<std::endl;
-    }
-    for(int i=0;i<descriptor->service_count();i++)
-    {
-        auto message = descriptor->service(i);
-        std::cout << "service:"<<message->name() <<std::endl;
-    }*/
 }
 
 void ProtoFileLoaderErrorCollector::AddWarning(const std::string& filename, int line, int column,

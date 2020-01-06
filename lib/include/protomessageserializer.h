@@ -89,7 +89,8 @@ private:
     template<typename Type, typename... Others>
     void readPrimitive2(const MessageField& field,google::protobuf::io::CodedInputStream* input,
                        int wireType, nlohmann::json& json);
-
+    std::string base64_decode(const std::string& source) const;
+    std::string base64_encode(const std::string& source) const;
 private:
     ProtoMessage* message;
 };
