@@ -8,8 +8,9 @@ include(FindDependencyMacro)
 # then add the following line:
 #  find_dependency(Python3 REQUIRED COMPONENTS Interpreter)
 
+find_dependency(protobuf REQUIRED)
 
 # Forward the project's exported targets
-#include("${CMAKE_CURRENT_LIST_DIR}/MyprojTargets.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/tambourinemanTargets.cmake")
 
 check_required_components("@PACKAGE_NAME@")

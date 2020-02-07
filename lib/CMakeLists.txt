@@ -8,7 +8,7 @@ set(THREADS_PREFER_PTHREAD_FLAG ON)
 set(Boost_USE_STATIC_LIBS        ON)
 set(Boost_USE_MULTITHREADED      ON)
 
-find_package(Protobuf REQUIRED)
+find_package(protobuf REQUIRED)
 find_package (Threads REQUIRED)
 find_package(Boost 1.65 REQUIRED system)
 find_package(OpenSSL REQUIRED)
@@ -42,7 +42,7 @@ target_include_directories(${LIB_NAME}
 
 add_custom_target(LibHeaders SOURCES ${LIB_HEADERS})
 
-target_link_libraries(${LIB_NAME} PUBLIC ${Protobuf_LIBRARIES})
+target_link_libraries(${LIB_NAME} PUBLIC protobuf::libprotobuf protobuf::libprotobuf-lite)
 target_link_libraries(${LIB_NAME} PRIVATE ${Boost_LIBRARIES}
     ${OPENSSL_LIBRARIES} ${ZLIB_LIBRARIES})
 target_link_libraries(${LIB_NAME} PRIVATE Threads::Threads)

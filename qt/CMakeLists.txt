@@ -1,6 +1,8 @@
 find_package(Qt5 REQUIRED COMPONENTS Gui Qml QuickControls2 Sql Quick)
+#find_package(Protobuf REQUIRED)
 
 set(CMAKE_AUTOMOC ON)
+
 
 qt5_add_resources(TAMBOURINEMAN_RS_SRCS resources.qrc)
 
@@ -21,7 +23,9 @@ add_custom_target(Headers SOURCES ${HEADERS})
 
 target_link_libraries(${EXECUTABLE_NAME} Qt5::Quick Qt5::Sql Qt5::QuickControls2
     Qt5::Qml Qt5::Gui)
-target_link_libraries(${EXECUTABLE_NAME} tbm)
+#target_link_libraries(${EXECUTABLE_NAME} Protobuf::libprotobuf Protobuf::libprotobuf-lite)
+target_link_libraries(${EXECUTABLE_NAME} TBM::tbm)
+
 
 
 

@@ -22,7 +22,7 @@ add_subdirectory(${CMAKE_BINARY_DIR}/googletest-src
                  EXCLUDE_FROM_ALL)
 
                  
-find_package(Protobuf REQUIRED)
+find_package(protobuf REQUIRED)
 find_package(Threads REQUIRED)
                  
 
@@ -36,12 +36,13 @@ set(TBM_TEST_SRCS src/test_protofileloader.cpp
 
 protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS  ${CMAKE_CURRENT_SOURCE_DIR}/data/addressbook.proto)
 
-include_directories(proto_cpp/ ${Protobuf_INCLUDE_DIRS} ${EASYLOGGING_INCLUDE})
+include_directories(proto_cpp/ ${protobuf_INCLUDE_DIRS} ${EASYLOGGING_INCLUDE})
 
 add_executable(tbm_test ${TBM_TEST_SRCS} ${PROTO_SRCS} ${PROTO_HDRS} ${EASYLOGGING_SRCS})
 
 #target_compile_features(json_utils_test PRIVATE cxx_auto_type)
 target_link_libraries(tbm_test PUBLIC Threads::Threads )
 #target_link_libraries(tbm_test PRIVATE ${Protobuf_LIBRARIES})
+#target_link_libraries(tbm_test PRIVATE protobuf::libprotobuf)
 target_link_libraries(tbm_test PUBLIC gtest_main TBM::tbm )
 

@@ -31,7 +31,7 @@
 
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/io/coded_stream.h>
-#include <google/protobuf/wire_format_lite_inl.h>
+#include <google/protobuf/wire_format_lite.h>
 #include <google/protobuf/wire_format.h>
 #include <google/protobuf/repeated_field.h>
 
@@ -95,16 +95,16 @@ uint8_t* ProtoMessageSerializer::writeMessage(const nlohmann::json& value, uint8
 std::string ProtoMessageSerializer::base64_decode(const std::string& source) const
 {
     auto decoded_size = boost::beast::detail::base64::decoded_size(source.size());
-    char decoded_target[decoded_size];
-    auto decoded_result = boost::beast::detail::base64::decode(decoded_target,source.c_str(),source.size());
-    return std::string(decoded_target,decoded_result.first);
+    std::unique_ptr<char[]> decoded_target = std::make_unique<char[]>(decoded_size);
+    auto decoded_result = boost::beast::detail::base64::decode(decoded_target.get(),source.c_str(),source.size());
+    return std::string(decoded_target.get(),decoded_result.first);
 }
 std::string ProtoMessageSerializer::base64_encode(const std::string& source) const
 {
-    auto encoded_size = boost::beast::detail::base64::encoded_size(source.size());
-    char encoded_target[encoded_size];
-    encoded_size = boost::beast::detail::base64::encode(encoded_target,source.c_str(),source.size());
-    return std::string(encoded_target,encoded_size);
+    auto encoded_size = boost::beast::detail::base64::encoded_size(source.size());    
+	std::unique_ptr<char[]> encoded_target = std::make_unique<char[]>(encoded_size);
+    encoded_size = boost::beast::detail::base64::encode(encoded_target.get(),source.c_str(),source.size());
+    return std::string(encoded_target.get(),encoded_size);
 }
 
 uint8_t* ProtoMessageSerializer::writeMessageField(const MessageField& field,const nlohmann::json& value, uint8_t* target) const
