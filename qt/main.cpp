@@ -6,7 +6,7 @@
 #include <QQuickStyle>
 #include <QLoggingCategory>
 
-#include "protofileloader.h"
+#include "protofileloadermodel.h"
 
 int main(int argc, char *argv[])
 {
@@ -17,8 +17,8 @@ int main(int argc, char *argv[])
     //qmlRegisterType<AudioOutputItemModel>("com.zergiu.qas", 1, 0, "AudioOutputItemModel");
     qmlRegisterSingletonType(QUrl(QStringLiteral("qrc:/qml/actions.qml")),
                              "com.zergiu.tambourineman", 1, 0, "Actions");
-    qmlRegisterType<ProtoFileLoader>("com.zergiu.tambourineman.proto",
-                                      1, 0, "ProtoFileLoader");
+    qmlRegisterType<ProtoFileLoaderModel>("com.zergiu.tambourineman.proto",
+                                      1, 0, "ProtoFileLoaderModel");
 
     QGuiApplication app(argc, argv);
     QQmlApplicationEngine engine;

@@ -21,8 +21,14 @@ add_subdirectory(${CMAKE_BINARY_DIR}/googletest-src
                  ${CMAKE_BINARY_DIR}/googletest-build
                  EXCLUDE_FROM_ALL)
 
-                 
+
+if(VCPKG) #or whatever variable we find vcpkg sets
 find_package(protobuf REQUIRED)
+else()
+find_package(Protobuf REQUIRED)
+set(protobuf_INCLUDE_DIRS Protobuf_INCLUDE_DIRS)
+endif()
+                 
 find_package(Threads REQUIRED)
                  
 
@@ -42,7 +48,5 @@ add_executable(tbm_test ${TBM_TEST_SRCS} ${PROTO_SRCS} ${PROTO_HDRS} ${EASYLOGGI
 
 #target_compile_features(json_utils_test PRIVATE cxx_auto_type)
 target_link_libraries(tbm_test PUBLIC Threads::Threads )
-#target_link_libraries(tbm_test PRIVATE ${Protobuf_LIBRARIES})
-#target_link_libraries(tbm_test PRIVATE protobuf::libprotobuf)
 target_link_libraries(tbm_test PUBLIC gtest_main TBM::tbm )
 

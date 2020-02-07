@@ -8,7 +8,12 @@ set(THREADS_PREFER_PTHREAD_FLAG ON)
 set(Boost_USE_STATIC_LIBS        ON)
 set(Boost_USE_MULTITHREADED      ON)
 
+if(VCPKG) #or whatever variable we find vcpkg sets
 find_package(protobuf REQUIRED)
+else()
+find_package(Protobuf REQUIRED)
+endif()
+
 find_package (Threads REQUIRED)
 find_package(Boost 1.65 REQUIRED system)
 find_package(OpenSSL REQUIRED)
@@ -22,8 +27,7 @@ set (TBM_SRCS src/protofileloader.cpp
         src/protomessageserializer.cpp
         src/protomessagehttpclient.cpp)
 
-include_directories(${Protobuf_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS}
-    ${EASYLOGGING_INCLUDE})
+include_directories(${Boost_INCLUDE_DIRS}   ${EASYLOGGING_INCLUDE})
 
 add_library(${LIB_NAME} SHARED ${TBM_SRCS} ${EASYLOGGING_SRCS})
 add_library(TBM::${LIB_NAME} ALIAS ${LIB_NAME})

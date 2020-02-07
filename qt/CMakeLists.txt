@@ -1,5 +1,4 @@
 find_package(Qt5 REQUIRED COMPONENTS Gui Qml QuickControls2 Sql Quick)
-#find_package(Protobuf REQUIRED)
 
 set(CMAKE_AUTOMOC ON)
 
@@ -10,7 +9,7 @@ file(GLOB_RECURSE HEADERS *.h *.hpp )
 
 set(EXECUTABLE_NAME tambourineman)
 
-set (TAMBOURINEMAN_SRCS main.cpp protofileloader.cpp)
+set (TAMBOURINEMAN_SRCS main.cpp protofileloadermodel.cpp)
 
 include_directories("${CMAKE_SOURCE_DIR}/lib/include" ${Protobuf_INCLUDE_DIRS})
 
@@ -23,7 +22,6 @@ add_custom_target(Headers SOURCES ${HEADERS})
 
 target_link_libraries(${EXECUTABLE_NAME} Qt5::Quick Qt5::Sql Qt5::QuickControls2
     Qt5::Qml Qt5::Gui)
-#target_link_libraries(${EXECUTABLE_NAME} Protobuf::libprotobuf Protobuf::libprotobuf-lite)
 target_link_libraries(${EXECUTABLE_NAME} TBM::tbm)
 
 

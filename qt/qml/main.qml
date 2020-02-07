@@ -36,37 +36,74 @@ ApplicationWindow
         }
     }
 
-//    header: ToolBar {
-//        RowLayout {
-//            anchors.fill: parent
-//            spacing: 10
-
-//             ToolButton {
-//                 action: TM.Actions.newProject
-//             }
-//             Label {
-//                 Layout.fillWidth: true
-//                 text: ""
-//             }
-
-//             ToolButton {
-//                 action: TM.Actions.quitApplication
-//             }
-//        }
-//    }
-
-
-
     RowLayout {
         anchors.fill: parent
-        Button {
-            text: "Open Proto"
-            onClicked: protoFileLoader.loadFile("asdads")
+
+        ColumnLayout {
+            anchors.left: parent
+            Button {
+                text: "Open Proto"
+                onClicked: protoFileLoaderModel.loadFile("asdads")
+            }
+            ListView {
+                width: 180
+                height: 500
+                orientation: Qt.Vertical
+                model: contactModel
+                delegate: contactDelegate
+                highlight: Rectangle { color: "lightsteelblue"; radius: 5 }
+                focus: true
+            }
+
+        }
+
+        ColumnLayout {
+            anchors.centerIn: parent
+            Rectangle {
+                anchors.fill: parent
+                border.color: black
+                border.width: 2
+            }
+        }
+
+        ColumnLayout {
+            anchors.right: parent
+            Rectangle {
+                anchors.fill: parent
+                border.color: red
+                border.width: 2
+            }
         }
     }
 
-    ProtoFileLoader {
-        id: protoFileLoader
+    ListModel {
+        id: contactModel
+        ListElement {
+               name: "Bill Smith"
+               number: "555 3264"
+           }
+           ListElement {
+               name: "John Brown"
+               number: "555 8426"
+           }
+           ListElement {
+               name: "Sam Wise"
+               number: "555 0473"
+           }
+    }
+
+    Component {
+        id: contactDelegate
+        Item {
+            width: 180; height: 40
+            Text {
+                    text: name + ": " + number
+            }
+        }
+    }
+
+    ProtoFileLoaderModel {
+        id: protoFileLoaderModel
     }
 
 
