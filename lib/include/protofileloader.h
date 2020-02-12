@@ -7,6 +7,7 @@
 #include <exception>
 
 #include "protofile.h"
+#include "tbm_exports.h"
 
 namespace google {
 namespace protobuf {
@@ -19,7 +20,7 @@ class Importer;
 
 namespace tbm {
 class ProtoFileLoaderErrorCollector;
-struct ProtoFileLoaderError {
+struct TBM_EXPORT ProtoFileLoaderError {
     ProtoFileLoaderError(){}
     ProtoFileLoaderError(const std::string& filename, int line, int column,
                          const std::string& message):
@@ -32,7 +33,7 @@ struct ProtoFileLoaderError {
 };
 
 
-class ProtoFileLoaderException : public std::exception
+class TBM_EXPORT ProtoFileLoaderException : public std::exception
 {
 public:
     ProtoFileLoaderException(const std::vector<ProtoFileLoaderError>& errors,
@@ -46,7 +47,7 @@ private:
     std::vector<ProtoFileLoaderError> warnings;
 };
 
-class ProtoFileLoader
+class TBM_EXPORT ProtoFileLoader
 {
 
 public:

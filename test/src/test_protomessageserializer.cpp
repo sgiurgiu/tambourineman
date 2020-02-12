@@ -13,6 +13,10 @@ TEST(ProtoMessageSerializer, validateIncorrectMessage)
 {
     ProtoFileLoader loader;
     std::vector<std::string> paths = {"test/data/"};
+#ifdef TBM_TEST_LINUX
+    paths.emplace_back("/usr/include/");
+#endif
+
     auto file = loader.loadFile("test/data/addressbook.proto", paths);
     auto messages = file.messages();
     ASSERT_EQ(messages.size(),2);
@@ -40,6 +44,10 @@ TEST(ProtoMessageSerializer, validateCorrectMessage)
 {
     ProtoFileLoader loader;
     std::vector<std::string> paths = {"test/data/"};
+#ifdef TBM_TEST_LINUX
+    paths.emplace_back("/usr/include/");
+#endif
+
     auto file = loader.loadFile("test/data/addressbook.proto", paths);
     auto messages = file.messages();
     ASSERT_EQ(messages.size(),2);
@@ -62,6 +70,10 @@ TEST(ProtoMessageSerializer, serializePersonMessage)
 {  
     ProtoFileLoader loader;
     std::vector<std::string> paths = {"test/data/"};
+#ifdef TBM_TEST_LINUX
+    paths.emplace_back("/usr/include/");
+#endif
+
     auto file = loader.loadFile("test/data/addressbook.proto", paths);
     auto messages = file.messages();
     ASSERT_EQ(messages.size(),2);
@@ -82,6 +94,10 @@ TEST(ProtoMessageSerializer, readPersonMessage)
 {
     ProtoFileLoader loader;
     std::vector<std::string> paths = {"test/data/"};
+#ifdef TBM_TEST_LINUX
+    paths.emplace_back("/usr/include/");
+#endif
+
     auto file = loader.loadFile("test/data/addressbook.proto", paths);
     auto messages = file.messages();
     ASSERT_EQ(messages.size(),2);

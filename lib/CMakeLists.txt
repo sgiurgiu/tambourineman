@@ -19,9 +19,14 @@ find_package(Boost 1.65 REQUIRED system)
 find_package(OpenSSL REQUIRED)
 find_package(ZLIB REQUIRED)
 
+set(LIB_NAME tbm)
+
+include(GenerateExportHeader)
+
+
 file(GLOB_RECURSE LIB_HEADERS *.h *.hpp )
 
-set(LIB_NAME tbm)
+
 set (TBM_SRCS src/protofileloader.cpp
         src/protofile.cpp
         src/protomessageserializer.cpp
@@ -50,6 +55,11 @@ target_link_libraries(${LIB_NAME} PUBLIC protobuf::libprotobuf protobuf::libprot
 target_link_libraries(${LIB_NAME} PRIVATE ${Boost_LIBRARIES}
     ${OPENSSL_LIBRARIES} ${ZLIB_LIBRARIES})
 target_link_libraries(${LIB_NAME} PRIVATE Threads::Threads)
+
+GENERATE_EXPORT_HEADER(${LIB_NAME}
+    EXPORT_FILE_NAME ${CMAKE_CURRENT_SOURCE_DIR}/include/${LIB_NAME}_exports.h
+    STATIC_DEFINE SHARED_EXPORTS_BUILT_AS_STATIC)
+
 
 ## this was copied and mangled until it became a spagetti mess
 ## from https://github.com/forexample/package-example/blob/master/Foo/CMakeLists.txt

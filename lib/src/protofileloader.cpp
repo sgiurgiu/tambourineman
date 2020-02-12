@@ -29,14 +29,17 @@ ProtoFileLoader::ProtoFileLoader():diskSourceTree(std::make_unique<google::proto
     importer(std::make_unique<google::protobuf::compiler::Importer>(diskSourceTree.get(),errorCollector.get()))
 {
     diskSourceTree->MapPath("",".");
-    diskSourceTree->MapPath("","/usr/include/");
+   // diskSourceTree->MapPath("","/usr/include");
 }
 ProtoFileLoader::~ProtoFileLoader() = default;
 
 ProtoFile ProtoFileLoader::loadFile(const std::string& file,std::vector<std::string>& includePaths)
 {
     LOG(INFO) << "Loading file "<<file<<std::endl;
-
+    for(const auto& path : includePaths)
+    {
+        diskSourceTree->MapPath("",path);
+    }
     std::string virtualFile,shadowingDiskFile;
     auto result = diskSourceTree->DiskFileToVirtualFile(file,&virtualFile,&shadowingDiskFile);
     switch (result) {
@@ -49,10 +52,7 @@ ProtoFile ProtoFileLoader::loadFile(const std::string& file,std::vector<std::str
         case google::protobuf::compiler::DiskSourceTree::CANNOT_OPEN:
         break;
     }
-    for(const auto& path : includePaths)
-    {
-        diskSourceTree->MapPath("",path);
-    }
+
     auto descriptor = importer->Import(file);
     if(descriptor)
     {

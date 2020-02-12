@@ -7,6 +7,9 @@ TEST(ProtoFileLoader, loadFile)
 {
     ProtoFileLoader loader;
     std::vector<std::string> paths = {"test/data/"};
+#ifdef TBM_TEST_LINUX
+    paths.emplace_back("/usr/include/");
+#endif
     auto file = loader.loadFile("test/data/addressbook.proto", paths);
     auto messages = file.messages();
     ASSERT_EQ(messages.size(),2);

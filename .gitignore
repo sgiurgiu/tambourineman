@@ -3,5 +3,5 @@ build/
 *.kdev4
 CMakeLists.txt.user
 myeasylog.log
-
+.cmake
 

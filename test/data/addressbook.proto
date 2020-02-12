@@ -10,7 +10,7 @@
 syntax = "proto3";
 package tutorial;
 
-import "timestamp.proto";
+import "google/protobuf/timestamp.proto";
 // [END declaration]
 
 // [START java_declaration]

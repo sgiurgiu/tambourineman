@@ -32,6 +32,7 @@
 #include <stdexcept>
 #include "json.hpp"
 #include "protofile.h"
+#include "tbm_exports.h"
 
 namespace google {
 namespace protobuf {
@@ -43,11 +44,11 @@ namespace tbm {
 
 class ProtoMessage;
 
-class InvalidMessageException : public std::runtime_error
+class TBM_EXPORT InvalidMessageException : public std::runtime_error
 {
     using std::runtime_error::runtime_error;
 };
-class NotImplementedFieldException : public std::runtime_error
+class TBM_EXPORT NotImplementedFieldException : public std::runtime_error
 {
     using std::runtime_error::runtime_error;
 };
@@ -55,7 +56,7 @@ class NotImplementedFieldException : public std::runtime_error
 /**
  * Seriliazes a proto message
  */
-class ProtoMessageSerializer {
+class TBM_EXPORT ProtoMessageSerializer {
 public:
     /**
     * Constructs a serializer for the specified  proto message.

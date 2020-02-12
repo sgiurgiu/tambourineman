@@ -31,8 +31,6 @@ endif()
                  
 find_package(Threads REQUIRED)
                  
-
-
 set(TBM_TEST_SRCS src/test_protofileloader.cpp
                 src/test_protomessageserializer.cpp
                 src/test_protomessagehttpclient.cpp
@@ -45,6 +43,10 @@ protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS  ${CMAKE_CURRENT_SOURCE_DIR}/data/ad
 include_directories(proto_cpp/ ${protobuf_INCLUDE_DIRS} ${EASYLOGGING_INCLUDE})
 
 add_executable(tbm_test ${TBM_TEST_SRCS} ${PROTO_SRCS} ${PROTO_HDRS} ${EASYLOGGING_SRCS})
+
+if(UNIX AND NOT APPLE)
+    target_compile_definitions(tbm_test PUBLIC "TBM_TEST_LINUX=1")
+endif()
 
 #target_compile_features(json_utils_test PRIVATE cxx_auto_type)
 target_link_libraries(tbm_test PUBLIC Threads::Threads )

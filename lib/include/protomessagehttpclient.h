@@ -3,15 +3,16 @@
 
 #include <string>
 #include <stdexcept>
+#include "tbm_exports.h"
 
 namespace tbm {
 
-class ConnectionException : public std::runtime_error
+class TBM_EXPORT ConnectionException : public std::runtime_error
 {
     using std::runtime_error::runtime_error;
 };
 
-class ProtoMessageHttpClient
+class TBM_EXPORT ProtoMessageHttpClient
 {
 public:
     ProtoMessageHttpClient(const std::string& url);

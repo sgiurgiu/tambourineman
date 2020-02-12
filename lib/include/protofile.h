@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include "tbm_exports.h"
 
 namespace google {
 namespace protobuf {
@@ -18,7 +19,7 @@ class EnumDescriptor;
 namespace tbm {
 class ProtoMessage;
 
-class ProtoEnum
+class TBM_EXPORT ProtoEnum
 {
 public:
     std::string name() const;
@@ -33,7 +34,7 @@ private:
     friend class MessageField;
 };
 
-class MessageField
+class TBM_EXPORT MessageField
 {
 public:
     std::string name() const;
@@ -96,7 +97,7 @@ private:
     friend class ProtoMessage;    
 };
 
-class ProtoMessage
+class TBM_EXPORT ProtoMessage
 {
 public:
     std::string name() const;
@@ -114,7 +115,7 @@ private:
     friend class MessageField;
 };
 
-class ProtoFile
+class TBM_EXPORT ProtoFile
 {
 public:
     ProtoFile();
