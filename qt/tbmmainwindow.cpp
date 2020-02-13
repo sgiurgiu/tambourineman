@@ -30,6 +30,7 @@ void TBMMainWindow::createActions()
     fileNewAction->setShortcuts(QKeySequence::New);
     fileNewAction->setToolTip(tr("Create new proto file"));
     fileNewAction->setStatusTip(fileNewAction->toolTip());
+    fileNewAction->setIcon(QIcon(":/icons/file.svg"));
 //    newAction->setIcon(QtAwesome::getInstance()->icon(fa::fileo));
 //    connect(newAction, SIGNAL(triggered()), SLOT(newProject()) );
 
@@ -38,6 +39,7 @@ void TBMMainWindow::createActions()
     fileOpenAction->setShortcuts(QKeySequence::Open);
     fileOpenAction->setToolTip(tr("Open proto file"));
     fileOpenAction->setStatusTip(fileOpenAction->toolTip());
+    fileOpenAction->setIcon(QIcon(":/icons/folder-open.svg"));
 
     quitApplicationAction = new QAction(this);
     quitApplicationAction->setText( tr("&Quit") );

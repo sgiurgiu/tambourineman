@@ -2,5 +2,7 @@
     <qresource prefix="/">
         <file>tambourineman.conf</file>
         <file>qml/actions.qml</file>
+        <file>icons/file.svg</file>
+        <file>icons/folder-open.svg</file>
     </qresource>
 </RCC>
