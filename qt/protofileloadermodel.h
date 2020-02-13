@@ -27,6 +27,7 @@ protected:
 
 private:
     tbm::ProtoFileLoader fileLoader;
+    std::vector<tbm::ProtoMessage> loadedMessages;
 };
 
 #endif // PROTOFILELOADER_H

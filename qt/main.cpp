@@ -11,8 +11,8 @@
 int main(int argc, char *argv[])
 {
 
-    QLoggingCategory::setFilterRules("*.debug=true\n"
-    "qt.*.debug=false");
+    QLoggingCategory::setFilterRules("*.debug=true\nqt.*.debug=false");
+    //QLoggingCategory::setFilterRules("*.debug=true");
     //QuickStyle::setStyle("Material");
     //qmlRegisterType<AudioOutputItemModel>("com.zergiu.qas", 1, 0, "AudioOutputItemModel");
     qmlRegisterSingletonType(QUrl(QStringLiteral("qrc:/qml/actions.qml")),
@@ -26,7 +26,9 @@ int main(int argc, char *argv[])
 
     engine.load(QUrl(QStringLiteral("qrc:/qml/main.qml")));
 
-    return app.exec();
+    auto appReturn = app.exec();
+
+    return appReturn;
 }
 
 

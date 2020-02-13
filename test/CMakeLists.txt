@@ -45,7 +45,7 @@ include_directories(proto_cpp/ ${protobuf_INCLUDE_DIRS} ${EASYLOGGING_INCLUDE})
 add_executable(tbm_test ${TBM_TEST_SRCS} ${PROTO_SRCS} ${PROTO_HDRS} ${EASYLOGGING_SRCS})
 
 if(UNIX AND NOT APPLE)
-    target_compile_definitions(tbm_test PUBLIC "TBM_TEST_LINUX=1")
+    target_compile_definitions(tbm_test PUBLIC "TBM_TEST_LINUX")
 endif()
 
 #target_compile_features(json_utils_test PRIVATE cxx_auto_type)

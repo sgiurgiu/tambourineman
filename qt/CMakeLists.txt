@@ -24,10 +24,12 @@ target_link_libraries(${EXECUTABLE_NAME} Qt5::Quick Qt5::Sql Qt5::QuickControls2
     Qt5::Qml Qt5::Gui)
 target_link_libraries(${EXECUTABLE_NAME} TBM::tbm)
 
-
-
-
 add_executable("${EXECUTABLE_NAME}::source" ALIAS "${EXECUTABLE_NAME}")
+
+if(UNIX AND NOT APPLE)
+    target_compile_definitions(${EXECUTABLE_NAME} PUBLIC "TBM_QT_LINUX")
+endif()
+
 
 install(TARGETS "${EXECUTABLE_NAME}" EXPORT "${EXECUTABLE_NAME}-targets"
     RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}" COMPONENT Runtime

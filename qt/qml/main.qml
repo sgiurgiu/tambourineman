@@ -43,13 +43,13 @@ ApplicationWindow
             anchors.left: parent
             Button {
                 text: "Open Proto"
-                onClicked: protoFileLoaderModel.loadFile("asdads")
+                onClicked: protoFileLoaderModel.loadFile("test/data/addressbook.proto")
             }
             ListView {
                 width: 180
                 height: 500
                 orientation: Qt.Vertical
-                model: contactModel
+                model: protoFileLoaderModel
                 delegate: contactDelegate
                 highlight: Rectangle { color: "lightsteelblue"; radius: 5 }
                 focus: true
@@ -61,7 +61,7 @@ ApplicationWindow
             anchors.centerIn: parent
             Rectangle {
                 anchors.fill: parent
-                border.color: black
+                border.color: "black"
                 border.width: 2
             }
         }
@@ -70,26 +70,10 @@ ApplicationWindow
             anchors.right: parent
             Rectangle {
                 anchors.fill: parent
-                border.color: red
+                border.color: "red"
                 border.width: 2
             }
         }
-    }
-
-    ListModel {
-        id: contactModel
-        ListElement {
-               name: "Bill Smith"
-               number: "555 3264"
-           }
-           ListElement {
-               name: "John Brown"
-               number: "555 8426"
-           }
-           ListElement {
-               name: "Sam Wise"
-               number: "555 0473"
-           }
     }
 
     Component {
@@ -97,7 +81,7 @@ ApplicationWindow
         Item {
             width: 180; height: 40
             Text {
-                    text: name + ": " + number
+                    text: name + ": " + type
             }
         }
     }
