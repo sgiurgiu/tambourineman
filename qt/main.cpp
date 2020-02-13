@@ -1,34 +1,29 @@
-#include <QGuiApplication>
-#include <QQmlApplicationEngine>
-#include <QtQml/qqml.h>
+#include <QApplication>
 #include <QMetaType>
 #include <QtDebug>
-#include <QQuickStyle>
-#include <QLoggingCategory>
+#include <QSettings>
+#include "tbmmainwindow.h"
 
-#include "protofileloadermodel.h"
 
 int main(int argc, char *argv[])
 {
+    QCoreApplication::setOrganizationName("Zergiu");
+    QCoreApplication::setOrganizationDomain("zergiu.com");
+    QCoreApplication::setApplicationName("Tambourine Man");
+    QCoreApplication::setApplicationVersion(QString("%1").arg(TBM_QT_VERSION));
 
-    QLoggingCategory::setFilterRules("*.debug=true\nqt.*.debug=false");
+    //QLoggingCategory::setFilterRules("*.debug=true\nqt.*.debug=false");
     //QLoggingCategory::setFilterRules("*.debug=true");
-    //QuickStyle::setStyle("Material");
-    //qmlRegisterType<AudioOutputItemModel>("com.zergiu.qas", 1, 0, "AudioOutputItemModel");
-    qmlRegisterSingletonType(QUrl(QStringLiteral("qrc:/qml/actions.qml")),
-                             "com.zergiu.tambourineman", 1, 0, "Actions");
-    qmlRegisterType<ProtoFileLoaderModel>("com.zergiu.tambourineman.proto",
-                                      1, 0, "ProtoFileLoaderModel");
 
-    QGuiApplication app(argc, argv);
-    QQmlApplicationEngine engine;
-    //engine.addImageProvider("audio",new IconProvider());
+    QApplication app(argc, argv);
 
-    engine.load(QUrl(QStringLiteral("qrc:/qml/main.qml")));
+    TBMMainWindow mainWindow;
+    QSettings settings;
+    mainWindow.restoreGeometry(settings.value("mainwindow/geometry").value<QByteArray>());
+    mainWindow.restoreState(settings.value("mainwindow/state").value<QByteArray>());
+    mainWindow.show();
 
-    auto appReturn = app.exec();
-
-    return appReturn;
+    return app.exec();
 }
 
 

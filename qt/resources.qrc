@@ -1,9 +1,6 @@
 <RCC>
     <qresource prefix="/">
-        <file>qml/main.qml</file>
         <file>tambourineman.conf</file>
         <file>qml/actions.qml</file>
-        <file>qml/file.svg</file>
-        <file>qml/folder-open.svg</file>
     </qresource>
 </RCC>

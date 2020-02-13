@@ -1,7 +1,6 @@
-find_package(Qt5 REQUIRED COMPONENTS Gui Qml QuickControls2 Sql Quick)
+find_package(Qt5 REQUIRED COMPONENTS Sql Widgets)
 
 set(CMAKE_AUTOMOC ON)
-
 
 qt5_add_resources(TAMBOURINEMAN_RS_SRCS resources.qrc)
 
@@ -9,7 +8,10 @@ file(GLOB_RECURSE HEADERS *.h *.hpp )
 
 set(EXECUTABLE_NAME tambourineman)
 
-set (TAMBOURINEMAN_SRCS main.cpp protofileloadermodel.cpp)
+set (TAMBOURINEMAN_SRCS main.cpp
+    tbmmainwindow.cpp
+    protofileloadermodel.cpp
+    protomessageoperationswidget.cpp)
 
 include_directories("${CMAKE_SOURCE_DIR}/lib/include" ${Protobuf_INCLUDE_DIRS})
 
@@ -20,8 +22,7 @@ target_compile_definitions(${EXECUTABLE_NAME} PUBLIC "TAMBOURINEMAN_DEBUG=$<CONF
 
 add_custom_target(Headers SOURCES ${HEADERS})
 
-target_link_libraries(${EXECUTABLE_NAME} Qt5::Quick Qt5::Sql Qt5::QuickControls2
-    Qt5::Qml Qt5::Gui)
+target_link_libraries(${EXECUTABLE_NAME} Qt5::Sql Qt5::Widgets)
 target_link_libraries(${EXECUTABLE_NAME} TBM::tbm)
 
 add_executable("${EXECUTABLE_NAME}::source" ALIAS "${EXECUTABLE_NAME}")
@@ -29,6 +30,7 @@ add_executable("${EXECUTABLE_NAME}::source" ALIAS "${EXECUTABLE_NAME}")
 if(UNIX AND NOT APPLE)
     target_compile_definitions(${EXECUTABLE_NAME} PUBLIC "TBM_QT_LINUX")
 endif()
+target_compile_definitions(${EXECUTABLE_NAME} PUBLIC "TBM_QT_VERSION=\"${CMAKE_PROJECT_VERSION}\"")
 
 
 install(TARGETS "${EXECUTABLE_NAME}" EXPORT "${EXECUTABLE_NAME}-targets"

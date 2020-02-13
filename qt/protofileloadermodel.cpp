@@ -18,11 +18,8 @@ void ProtoFileLoaderModel::loadFile(const QString& file)
 #endif
     auto protoFile = fileLoader.loadFile("test/data/addressbook.proto", paths);
     auto messages = protoFile.messages();
-    //auto initialMessagesSize = loadedMessages.size();
     std::copy(messages.begin(),messages.end(),std::back_inserter(loadedMessages));
-    //emit dataChanged(createIndex(initialMessagesSize,0),createIndex(loadedMessages.size(),0),{FieldNameRole,FieldTypeRole});
     emit layoutChanged();
-
 }
 QHash<int, QByteArray> ProtoFileLoaderModel::roleNames() const
 {
