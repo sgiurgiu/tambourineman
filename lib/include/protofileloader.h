@@ -7,7 +7,7 @@
 #include <exception>
 
 #include "protofile.h"
-#include "tbm_exports.h"
+#include <tbm_exports.h>
 
 namespace google {
 namespace protobuf {

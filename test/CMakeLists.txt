@@ -1,3 +1,5 @@
+
+
 # Download and unpack googletest at configure time
 configure_file(${CMAKE_SOURCE_DIR}/cmake/GoogleTest-CMakeLists.txt.in ${CMAKE_BINARY_DIR}/googletest-download/CMakeLists.txt)
 execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
@@ -31,6 +33,10 @@ set(protobuf_INCLUDE_DIRS Protobuf_INCLUDE_DIRS)
 endif()
                  
 find_package(Threads REQUIRED)
+
+ #if(MSVC)
+    
+ #endif()
                  
 set(TBM_TEST_SRCS src/test_protofileloader.cpp
                 src/test_protomessageserializer.cpp

@@ -1,4 +1,6 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.15)
+
+cmake_policy(SET CMP0091 NEW)
 
 project (tambourineman
      VERSION 0.0.1
@@ -24,7 +26,8 @@ endif()
 if(NOT MSVC)
     add_compile_options(-Wall -Wextra)
 else()
-    add_compile_options(/permissive-)
+    add_compile_options(/permissive-)    
+    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
     # We want to pass this flag to link.exe. In CMake 3.13, we can use add_link_options
     # /IGNORE:4221 # LNK4221 warns for empty cpp files. We use such files.
 endif()

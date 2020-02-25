@@ -45,6 +45,7 @@ target_include_directories(${LIB_NAME}
     PUBLIC
         $<INSTALL_INTERFACE:include>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/include>
     PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
@@ -57,7 +58,7 @@ target_link_libraries(${LIB_NAME} PRIVATE ${Boost_LIBRARIES}
 target_link_libraries(${LIB_NAME} PRIVATE Threads::Threads)
 
 GENERATE_EXPORT_HEADER(${LIB_NAME}
-    EXPORT_FILE_NAME ${CMAKE_CURRENT_SOURCE_DIR}/include/${LIB_NAME}_exports.h
+    EXPORT_FILE_NAME ${CMAKE_BINARY_DIR}/include/${LIB_NAME}_exports.h
     STATIC_DEFINE SHARED_EXPORTS_BUILT_AS_STATIC)
 
 
@@ -80,7 +81,7 @@ configure_package_config_file(
     INSTALL_DESTINATION "${config_install_dir}"
 )
 
-install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install(DIRECTORY include/ ${CMAKE_BINARY_DIR}/include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 install(
     TARGETS ${LIB_NAME}
