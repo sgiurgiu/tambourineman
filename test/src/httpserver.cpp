@@ -11,7 +11,7 @@
 
 #include <easylogging++.h>
 
-//INITIALIZE_EASYLOGGINGPP
+INITIALIZE_EASYLOGGINGPP
 
 namespace http = boost::beast::http;    // from <boost/beast/http.hpp>
 

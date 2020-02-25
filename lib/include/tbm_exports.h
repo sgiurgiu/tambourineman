@@ -9,20 +9,20 @@
 #  ifndef TBM_EXPORT
 #    ifdef tbm_EXPORTS
         /* We are building this library */
-#      define TBM_EXPORT __attribute__((visibility("default")))
+#      define TBM_EXPORT __declspec(dllexport)
 #    else
         /* We are using this library */
-#      define TBM_EXPORT __attribute__((visibility("default")))
+#      define TBM_EXPORT __declspec(dllimport)
 #    endif
 #  endif
 
 #  ifndef TBM_NO_EXPORT
-#    define TBM_NO_EXPORT __attribute__((visibility("hidden")))
+#    define TBM_NO_EXPORT 
 #  endif
 #endif
 
 #ifndef TBM_DEPRECATED
-#  define TBM_DEPRECATED __attribute__ ((__deprecated__))
+#  define TBM_DEPRECATED __declspec(deprecated)
 #endif
 
 #ifndef TBM_DEPRECATED_EXPORT

@@ -8,7 +8,7 @@ set(THREADS_PREFER_PTHREAD_FLAG ON)
 set(Boost_USE_STATIC_LIBS        ON)
 set(Boost_USE_MULTITHREADED      ON)
 
-if(VCPKG) #or whatever variable we find vcpkg sets
+if(VCPKG_TOOLCHAIN) #or whatever variable we find vcpkg sets
 find_package(protobuf REQUIRED)
 else()
 find_package(Protobuf REQUIRED)
