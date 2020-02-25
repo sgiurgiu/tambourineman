@@ -37,7 +37,7 @@ include_directories(${Boost_INCLUDE_DIRS}   ${EASYLOGGING_INCLUDE})
 add_library(${LIB_NAME} SHARED ${TBM_SRCS} ${EASYLOGGING_SRCS})
 add_library(TBM::${LIB_NAME} ALIAS ${LIB_NAME})
 
-target_compile_definitions(${LIB_NAME} PUBLIC "LIBTBM_DEBUG=$<CONFIG:Debug>")
+target_compile_definitions(${LIB_NAME} PUBLIC "$<$<CONFIG:Debug>:LIBTBM_DEBUG>")
 set (LIBTM_NAME_VERSION "${PROJECT_NAME} - ${PROJECT_VERSION}")
 target_compile_definitions(${LIB_NAME} PUBLIC "LIBTBM_NAME_VERSION_STRING=\"${LIBTM_NAME_VERSION}\"")
 

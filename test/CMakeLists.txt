@@ -34,9 +34,6 @@ endif()
                  
 find_package(Threads REQUIRED)
 
- #if(MSVC)
-    
- #endif()
                  
 set(TBM_TEST_SRCS src/test_protofileloader.cpp
                 src/test_protomessageserializer.cpp
@@ -50,13 +47,24 @@ protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS  ${CMAKE_CURRENT_SOURCE_DIR}/data/ad
 
 include_directories(proto_cpp/ ${EASYLOGGING_INCLUDE})
 
-add_executable(tbm_test ${TBM_TEST_SRCS} ${PROTO_SRCS} ${PROTO_HDRS} ${EASYLOGGING_SRCS})
+set(EXECUTABLE_NAME tbm_test)
+
+add_executable(${EXECUTABLE_NAME} ${TBM_TEST_SRCS} ${PROTO_SRCS} ${PROTO_HDRS} ${EASYLOGGING_SRCS})
+
+if (WIN32)
+# copy the .dll file to the same folder as the executable
+add_custom_command(
+    TARGET ${EXECUTABLE_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+    $<TARGET_FILE_DIR:TBM::tbm>
+    $<TARGET_FILE_DIR:${EXECUTABLE_NAME}>)
+endif()
 
 if(UNIX AND NOT APPLE)
-    target_compile_definitions(tbm_test PUBLIC "TBM_TEST_LINUX")
+    target_compile_definitions(${EXECUTABLE_NAME} PUBLIC "TBM_TEST_LINUX")
 endif()
 
 #target_compile_features(json_utils_test PRIVATE cxx_auto_type)
-target_link_libraries(tbm_test PRIVATE Threads::Threads protobuf::libprotobuf protobuf::libprotobuf-lite)
-target_link_libraries(tbm_test PRIVATE gtest_main TBM::tbm )
+target_link_libraries(${EXECUTABLE_NAME} PRIVATE Threads::Threads protobuf::libprotobuf protobuf::libprotobuf-lite)
+target_link_libraries(${EXECUTABLE_NAME} PRIVATE gtest_main TBM::tbm )
 
